@@ -11,6 +11,8 @@
 #include <commctrl.h>
 #include <commdlg.h>
 #include <shellapi.h>
+#include <shlwapi.h>
+#include <WinBase.h>
 
 // Macros to compile under XP
 #if !defined(LSTATUS)
@@ -188,7 +190,7 @@ void FatalError(const std::string &message) {
 // Settings
 //-----------------------------------------------------------------------------
 
-class SettingsImplWin32 final : public Settings {
+class SettingsImplWin32Reg final : public Settings {
 public:
     HKEY hKey = NULL;
 
@@ -200,7 +202,7 @@ public:
         return hKey;
     }
 
-    ~SettingsImplWin32() {
+    ~SettingsImplWin32Reg() {
         if(hKey != NULL) {
             sscheck(ERROR_SUCCESS == RegCloseKey(hKey));
         }
@@ -261,8 +263,88 @@ public:
     }
 };
 
+class SettingsImplWin32IniFile final : public Settings {
+public:
+    static constexpr const char* INI_FILENAME = "solvespace.ini";
+    static constexpr const char* INI_SECTION_NAME = "solvespace";
+    Path iniPath;
+
+
+    ~SettingsImplWin32IniFile() { }
+
+    void FreezeInt(const std::string &key, uint32_t value) {
+        FreezeString(key, std::to_string(value));
+    }
+
+    uint32_t ThawInt(const std::string &key, uint32_t defaultValue) {
+        std::string valueString = ThawString(key, std::to_string(defaultValue));
+        return (uint32_t)strtoul(valueString.c_str(), nullptr, 10);
+    }
+
+    void FreezeFloat(const std::string &key, double value) {
+        FreezeString(key, std::to_string(value));
+    }
+
+    double ThawFloat(const std::string &key, double defaultValue) {
+        std::string valueString = ThawString(key, std::to_string(defaultValue));
+        return strtod(valueString.c_str(), nullptr);
+    }
+
+    void FreezeString(const std::string &key, const std::string &value) {
+        DWORD ret = WritePrivateProfileStringW(
+            Widen(INI_SECTION_NAME).c_str(),
+            Widen(key).c_str(), Widen(value).c_str(),
+            Widen(iniPath.raw).c_str()
+        );
+    }
+
+    std::string ThawString(const std::string &key, const std::string &defaultValue) {
+        //FIXME: buffer length
+        constexpr size_t _BUF_LEN = MAX_PATH * 2;
+        wchar_t buf[_BUF_LEN] = {};
+        DWORD ret = GetPrivateProfileStringW(Widen(INI_SECTION_NAME).c_str(),
+                Widen(key).c_str(), Widen(defaultValue).c_str(),
+                buf, _BUF_LEN, Widen(iniPath.raw).c_str());
+        
+        return Narrow(buf);
+    }
+};
+
+static SettingsRef cachedSettingsRef = nullptr;
+
 SettingsRef GetSettings() {
-    return std::make_shared<SettingsImplWin32>();
+    if (cachedSettingsRef == nullptr) {
+        // INI file check only first time calling.
+
+        // FIXME: ref) https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation
+        WCHAR appFilePath[MAX_PATH] = {};
+        if(GetModuleFileNameW(NULL, appFilePath, sizeof(appFilePath)) == 0) {
+            std::string mes = "Failed to GetModuleFileNameW() in GetSettings(): errorcode=";
+            mes += GetLastError();
+            FatalError(mes);
+        }
+        Path apppath = Path::From(Narrow(appFilePath));
+        Path appdirpath = apppath.Parent();
+        Path inipath = appdirpath.Join(SettingsImplWin32IniFile::INI_FILENAME);
+        if(inipath.IsEmpty()) {
+            FatalError("Failed to generate INI file path.");
+        }
+        
+        if(PathFileExistsW(Widen(inipath.raw).c_str()) == FALSE) {
+            // INI file not exist. Use Registry.
+
+            cachedSettingsRef = std::make_shared<SettingsImplWin32Reg>();
+            
+        } else {
+            // INI file already exists. Use it.
+
+            auto settings = std::make_shared<SettingsImplWin32IniFile>();
+            settings->iniPath = inipath;
+            cachedSettingsRef = settings;
+        }
+    }
+
+    return cachedSettingsRef;
 }
 
 //-----------------------------------------------------------------------------
