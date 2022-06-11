@@ -12,7 +12,7 @@
 #include <commdlg.h>
 #include <shellapi.h>
 #include <shlwapi.h>
-#include <WinBase.h>
+#include <winbase.h>
 
 // Macros to compile under XP
 #if !defined(LSTATUS)
