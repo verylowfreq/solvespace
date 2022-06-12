@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SolveSpace 3.0\n"
 "Report-Msgid-Bugs-To: whitequark@whitequark.org\n"
 "POT-Creation-Date: 2022-02-01 16:24+0200\n"
-"PO-Revision-Date: 2022-06-12 17:31+0900\n"
+"PO-Revision-Date: 2022-06-12 18:02+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja_JP\n"
@@ -1806,9 +1806,8 @@ msgid "Style name cannot be empty"
 msgstr "スタイル名は空にできません"
 
 #: textscreens.cpp:791
-#, fuzzy
 msgid "Can't repeat fewer than 1 time."
-msgstr "繰り返しは1以上の回数を指定してください。"
+msgstr "繰り返しは 1 以上の回数を指定してください。"
 
 #: textscreens.cpp:795
 msgid "Can't repeat more than 999 times."
@@ -1848,19 +1847,19 @@ msgstr "TrueTypeフォントのテキストからアウトラインをスケッ�
 
 #: toolbar.cpp:28
 msgid "Sketch image from a file"
-msgstr ""
+msgstr "ファイルから画像を取り込む"
 
 #: toolbar.cpp:30
 msgid "Create tangent arc at selected point"
-msgstr ""
+msgstr "選択された点でフィレットを作る"
 
 #: toolbar.cpp:32
 msgid "Sketch cubic Bezier spline"
-msgstr ""
+msgstr "ベジェ曲線をスケッチ"
 
 #: toolbar.cpp:34
 msgid "Sketch datum point"
-msgstr ""
+msgstr "点をスケッチ"
 
 #: toolbar.cpp:36
 msgid "Toggle construction"
@@ -1944,15 +1943,15 @@ msgstr "直線上にコピーを作成"
 
 #: toolbar.cpp:80
 msgid "New group in new workplane (thru given entities)"
-msgstr ""
+msgstr "選択した要素で定義される作業平面でスケッチを開始"
 
 #: toolbar.cpp:82
 msgid "New group in 3d"
-msgstr ""
+msgstr "三次元空間内でスケッチを開始"
 
 #: toolbar.cpp:84
 msgid "New group linking / assembling file"
-msgstr ""
+msgstr "他のファイルをリンクする"
 
 #: toolbar.cpp:88
 msgid "Nearest isometric view"
@@ -1975,12 +1974,12 @@ msgstr "メッセージ"
 #: util.cpp:170
 msgctxt "button"
 msgid "&OK"
-msgstr ""
+msgstr "OK (&O)"
 
 #: view.cpp:127
 msgid "Scale cannot be zero or negative."
-msgstr ""
+msgstr "縮尺は 0 や負の値にはできません。"
 
 #: view.cpp:139 view.cpp:148
 msgid "Bad format: specify x, y, z"
-msgstr ""
+msgstr "書式が誤っています。\"x, y, z\" で指定してください。"
