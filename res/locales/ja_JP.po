@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SolveSpace 3.0\n"
 "Report-Msgid-Bugs-To: whitequark@whitequark.org\n"
 "POT-Creation-Date: 2022-02-01 16:24+0200\n"
-"PO-Revision-Date: 2022-06-10 23:21+0900\n"
+"PO-Revision-Date: 2022-06-12 18:02+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja_JP\n"
@@ -49,11 +49,11 @@ msgstr "移動方向を決めるために、点を2つ選択してください�
 
 #: clipboard.cpp:453
 msgid "Transformation is identity. So all copies will be exactly on top of each other."
-msgstr "移動が指定されましたが移動量が0です。すべてのコピーは同一位置にあります。"
+msgstr "移動量が 0 です。すべての複製は同一位置にあります。"
 
 #: clipboard.cpp:457
 msgid "Too many items to paste; split this into smaller pastes."
-msgstr "貼り付けるアイテムが多すぎます。分割してください。"
+msgstr "複製の数が多すぎます。分割してください。"
 
 #: clipboard.cpp:462
 msgid "No workplane active."
@@ -75,7 +75,7 @@ msgstr "透視投影の拡大率は、「表示 -> 透視投影で表示」を�
 #: confscreen.cpp:435 confscreen.cpp:445
 #, c-format
 msgid "Specify between 0 and %d digits after the decimal."
-msgstr ""
+msgstr "小数点以下の桁数は、0 から %d の範囲で指定してください。"
 
 #: confscreen.cpp:457
 msgid "Export scale must not be zero!"
@@ -83,7 +83,7 @@ msgstr "エクスポートの比率には0を指定できません。"
 
 #: confscreen.cpp:469
 msgid "Cutter radius offset must not be negative!"
-msgstr ""
+msgstr "ドリル径は負の値にできません。"
 
 #: confscreen.cpp:528
 msgid "Bad value: autosave interval should be positive"
@@ -453,11 +453,11 @@ msgstr ""
 
 #: constraint.cpp:813 mouse.cpp:1158
 msgid "NEW COMMENT -- DOUBLE-CLICK TO EDIT"
-msgstr ""
+msgstr "(コメント - ダブルクリックで編集)"
 
 #: constraint.cpp:818
 msgid "click center of comment text"
-msgstr ""
+msgstr "コメントテキストの中心をクリックで指定"
 
 #: export.cpp:19
 msgid ""
@@ -515,7 +515,7 @@ msgstr ""
 #: file.cpp:867
 msgctxt "title"
 msgid "Missing File"
-msgstr ""
+msgstr "不明ファイル"
 
 #: file.cpp:868
 #, c-format
@@ -534,17 +534,17 @@ msgstr ""
 #: file.cpp:873
 msgctxt "button"
 msgid "&Yes"
-msgstr ""
+msgstr "はい (&Y)"
 
 #: file.cpp:875
 msgctxt "button"
 msgid "&No"
-msgstr ""
+msgstr "いいえ (&N)"
 
 #: file.cpp:877 solvespace.cpp:611
 msgctxt "button"
 msgid "&Cancel"
-msgstr ""
+msgstr "キャンセル (&C)"
 
 #: graphicswin.cpp:41
 msgid "&File"
@@ -617,16 +617,17 @@ msgid "&Redo"
 msgstr "やり直し (&R)"
 
 #: graphicswin.cpp:63
+#, fuzzy
 msgid "Re&generate All"
-msgstr ""
+msgstr "すべて再生成 (&g)"
 
 #: graphicswin.cpp:65
 msgid "Snap Selection to &Grid"
-msgstr ""
+msgstr "選択したオブジェクトをグリッドに合わせる (&G)"
 
 #: graphicswin.cpp:66
 msgid "Rotate Imported &90°"
-msgstr ""
+msgstr "リンクした部品を90度回転する (&9)"
 
 #: graphicswin.cpp:68
 msgid "Cu&t"
@@ -642,7 +643,7 @@ msgstr "貼り付け (&P)"
 
 #: graphicswin.cpp:71
 msgid "Paste &Transformed..."
-msgstr ""
+msgstr "複製しながら貼り付け"
 
 #: graphicswin.cpp:72
 msgid "&Delete"
@@ -650,7 +651,7 @@ msgstr "削除 (&D)"
 
 #: graphicswin.cpp:74
 msgid "Select &Edge Chain"
-msgstr ""
+msgstr "接続しているエッジを選択"
 
 #: graphicswin.cpp:75
 msgid "Select &All"
@@ -662,11 +663,11 @@ msgstr "選択を解除 (&U)"
 
 #: graphicswin.cpp:78
 msgid "&Line Styles..."
-msgstr ""
+msgstr "線のスタイル... (&L)"
 
 #: graphicswin.cpp:79
 msgid "&View Projection..."
-msgstr ""
+msgstr "カメラの設定... (&V)"
 
 #: graphicswin.cpp:81
 msgid "Con&figuration..."
@@ -760,19 +761,19 @@ msgstr "グループ (&N)"
 
 #: graphicswin.cpp:110
 msgid "Sketch In &3d"
-msgstr ""
+msgstr "三次元空間内でスケッチを始める (&3)"
 
 #: graphicswin.cpp:111
 msgid "Sketch In New &Workplane"
-msgstr ""
+msgstr "新しい作業平面上でスケッチを始める (&W)"
 
 #: graphicswin.cpp:113
 msgid "Step &Translating"
-msgstr ""
+msgstr "直線上にコピー (&T)"
 
 #: graphicswin.cpp:114
 msgid "Step &Rotating"
-msgstr ""
+msgstr "円上にコピー (&R)"
 
 #: graphicswin.cpp:116
 msgid "E&xtrude"
@@ -780,23 +781,23 @@ msgstr "押し出し (&x)"
 
 #: graphicswin.cpp:117
 msgid "&Helix"
-msgstr ""
+msgstr "周回 (&H)"
 
 #: graphicswin.cpp:118
 msgid "&Lathe"
-msgstr ""
+msgstr "螺旋 (&L)"
 
 #: graphicswin.cpp:119
 msgid "Re&volve"
-msgstr ""
+msgstr "回転 (&v)"
 
 #: graphicswin.cpp:121
 msgid "Link / Assemble..."
-msgstr ""
+msgstr "リンク・アセンブル..."
 
 #: graphicswin.cpp:122
 msgid "Link Recent"
-msgstr ""
+msgstr "最近使用したファイルとリンク"
 
 #: graphicswin.cpp:124
 msgid "&Sketch"
@@ -812,55 +813,56 @@ msgstr "三次元空間内 (&3)"
 
 #: graphicswin.cpp:128
 msgid "Datum &Point"
-msgstr ""
+msgstr "点 (&P)"
 
 #: graphicswin.cpp:129
 msgid "&Workplane"
-msgstr ""
+msgstr "作業平面 (&W)"
 
 #: graphicswin.cpp:131
 msgid "Line &Segment"
-msgstr ""
+msgstr "直線セグメント (&S)"
 
 #: graphicswin.cpp:132
 msgid "C&onstruction Line Segment"
-msgstr ""
+msgstr "補助線の直線セグメント (&o)"
 
 #: graphicswin.cpp:133
 msgid "&Rectangle"
-msgstr ""
+msgstr "四角形 (&R)"
 
 #: graphicswin.cpp:134
 msgid "&Circle"
-msgstr ""
+msgstr "円 (&C)"
 
 #: graphicswin.cpp:135
 msgid "&Arc of a Circle"
-msgstr ""
+msgstr "円弧 (&A)"
 
 #: graphicswin.cpp:136
 msgid "&Bezier Cubic Spline"
-msgstr ""
+msgstr "ベジェ曲線 (&B)"
 
 #: graphicswin.cpp:138
 msgid "&Text in TrueType Font"
-msgstr ""
+msgstr "TrueTypeフォントのテキスト (&T)"
 
 #: graphicswin.cpp:139
 msgid "&Image"
-msgstr ""
+msgstr "画像 (&I)"
 
 #: graphicswin.cpp:141
 msgid "To&ggle Construction"
-msgstr ""
+msgstr "補助線と切り替え (&g)"
 
 #: graphicswin.cpp:142
+#, fuzzy
 msgid "Tangent &Arc at Point"
-msgstr ""
+msgstr "フィレット"
 
 #: graphicswin.cpp:143
 msgid "Split Curves at &Intersection"
-msgstr ""
+msgstr "曲線を交差箇所で分割 (&I)"
 
 #: graphicswin.cpp:145
 msgid "&Constrain"
@@ -935,8 +937,9 @@ msgid "Same Orient&ation"
 msgstr "同じ方向 (&a)"
 
 #: graphicswin.cpp:165
+#, fuzzy
 msgid "Lock Point Where &Dragged"
-msgstr ""
+msgstr "点を他のオブジェクトに連動して動かさない (&D)"
 
 #: graphicswin.cpp:167
 msgid "Comment"
@@ -960,31 +963,32 @@ msgstr "外周長を計測 (&P)"
 
 #: graphicswin.cpp:173
 msgid "Show &Interfering Parts"
-msgstr ""
+msgstr "部品の干渉を強調表示 (&I)"
 
 #: graphicswin.cpp:174
 msgid "Show &Naked Edges"
-msgstr ""
+msgstr "浮いたエッジを強調表示 (&N)"
 
 #: graphicswin.cpp:175
 msgid "Show &Center of Mass"
 msgstr "重心を表示 (&C)"
 
 #: graphicswin.cpp:177
+#, fuzzy
 msgid "Show &Underconstrained Points"
-msgstr ""
+msgstr "拘束されていない点を強調表示 (&U)"
 
 #: graphicswin.cpp:179
 msgid "&Trace Point"
-msgstr ""
+msgstr "点の位置の記録を開始 (&T)"
 
 #: graphicswin.cpp:180
 msgid "&Stop Tracing..."
-msgstr ""
+msgstr "記録を終了して保存する... (&S)"
 
 #: graphicswin.cpp:181
 msgid "Step &Dimension..."
-msgstr ""
+msgstr "寸法を段階的に変更... (&D)"
 
 #: graphicswin.cpp:183
 msgid "&Help"
@@ -1017,7 +1021,7 @@ msgstr "ファイル '%s' は存在しません。"
 
 #: graphicswin.cpp:737
 msgid "No workplane is active, so the grid will not appear."
-msgstr ""
+msgstr "作業平面がアクティブでないため、グリッドは表示されません。"
 
 #: graphicswin.cpp:752
 msgid ""
@@ -1029,11 +1033,12 @@ msgstr ""
 
 #: graphicswin.cpp:837
 msgid "Select a point; this point will become the center of the view on screen."
-msgstr ""
+msgstr "スクリーンの中央とする点を指定してください。"
 
 #: graphicswin.cpp:1137
+#, fuzzy
 msgid "No additional entities share endpoints with the selected entities."
-msgstr ""
+msgstr "選択した要素と端点を共有する要素は、これ以上ありません。"
 
 #: graphicswin.cpp:1155
 msgid ""
@@ -1046,6 +1051,8 @@ msgid ""
 "No workplane is active. Activate a workplane (with Sketch -> In Workplane) to define the plane "
 "for the snap grid."
 msgstr ""
+"作業平面がアクティブではありません。グリッドの平面を指定するには作業平面をアクティブにしてくださ"
+"い (「スケッチ -> 作業平面上」)。"
 
 #: graphicswin.cpp:1185
 msgid ""
@@ -1056,62 +1063,70 @@ msgstr ""
 #: graphicswin.cpp:1270
 msgid "No workplane selected. Activating default workplane for this group."
 msgstr ""
+"作業平面がアクティブではありません。現在のグループのデフォルトの作業平面をアクティブにします。"
 
 #: graphicswin.cpp:1273
 msgid ""
 "No workplane is selected, and the active group does not have a default workplane. Try selecting a "
 "workplane, or activating a sketch-in-new-workplane group."
 msgstr ""
+"作業平面がアクティブではありません。また、現在のグループにはデフォルトの作業平面がありません。作業"
+"平面を選択するか、新しく作業平面グループを作成してください。"
 
 #: graphicswin.cpp:1294
+#, fuzzy
 msgid ""
 "Bad selection for tangent arc at point. Select a single point, or select nothing to set up arc "
 "parameters."
 msgstr ""
+"フィェットの作成には無効な選択です。ひとつの点が選択されていればフィレットを作成します。なにも選択"
+"されていなければ、フィレット作成時のパラメーターを設定できます。"
 
 #: graphicswin.cpp:1305
 msgid "click point on arc (draws anti-clockwise)"
-msgstr ""
+msgstr "円弧上の点をクリックで指定 (反時計回りに描きます)"
 
 #: graphicswin.cpp:1306
 msgid "click to place datum point"
-msgstr ""
+msgstr "点の位置をクリックで指定"
 
 #: graphicswin.cpp:1307
 msgid "click first point of line segment"
-msgstr ""
+msgstr "直線セグメントの最初の点をクリックで指定"
 
 #: graphicswin.cpp:1309
 msgid "click first point of construction line segment"
-msgstr ""
+msgstr "補助線の最初の点をクリックで指定"
 
 #: graphicswin.cpp:1310
+#, fuzzy
 msgid "click first point of cubic segment"
-msgstr ""
+msgstr "曲線の最初の点をクリックで指定"
 
 #: graphicswin.cpp:1311
 msgid "click center of circle"
-msgstr ""
+msgstr "円の中央をクリックで指定"
 
 #: graphicswin.cpp:1312
 msgid "click origin of workplane"
-msgstr ""
+msgstr "作業平面の原点をクリックで指定"
 
 #: graphicswin.cpp:1313
 msgid "click one corner of rectangle"
-msgstr ""
+msgstr "四角形の角のひとつをクリックで指定"
 
 #: graphicswin.cpp:1314
 msgid "click top left of text"
-msgstr ""
+msgstr "テキストの右上をクリックで指定する"
 
 #: graphicswin.cpp:1320
 msgid "click top left of image"
-msgstr ""
+msgstr "画像の右上をクリックで指定する"
 
 #: graphicswin.cpp:1346
 msgid "No entities are selected. Select entities before trying to toggle their construction state."
 msgstr ""
+"スケッチ要素が選択されていません。拘束と参照を切り替えるには、最初に要素を選択してください。"
 
 #: group.cpp:86
 msgctxt "group-name"
@@ -1272,47 +1287,52 @@ msgstr ""
 
 #: mouse.cpp:557
 msgid "Assign to Style"
-msgstr ""
+msgstr "スタイルを割り当て"
 
 #: mouse.cpp:573
 msgid "No Style"
-msgstr ""
+msgstr "スタイル指定なし"
 
 #: mouse.cpp:576
 msgid "Newly Created Custom Style..."
-msgstr ""
+msgstr "スタイルを作成して割り当て..."
 
 #: mouse.cpp:583
 msgid "Group Info"
-msgstr ""
+msgstr "グループ情報"
 
 #: mouse.cpp:603
 msgid "Style Info"
-msgstr ""
+msgstr "スタイル情報"
 
 #: mouse.cpp:623
+#, fuzzy
 msgid "Select Edge Chain"
-msgstr ""
+msgstr "接続しているエッジをまとめて選択"
 
 #: mouse.cpp:629
+#, fuzzy
 msgid "Toggle Reference Dimension"
-msgstr ""
+msgstr "参照寸法と切り替え"
 
 #: mouse.cpp:635
 msgid "Other Supplementary Angle"
-msgstr ""
+msgstr "補角と切り替え"
 
 #: mouse.cpp:640
+#, fuzzy
 msgid "Snap to Grid"
-msgstr ""
+msgstr "グリッドに沿わせる"
 
 #: mouse.cpp:649
+#, fuzzy
 msgid "Remove Spline Point"
-msgstr ""
+msgstr "スプラインの点を削除"
 
 #: mouse.cpp:684
+#, fuzzy
 msgid "Add Spline Point"
-msgstr ""
+msgstr "スプラインの点を追加"
 
 #: mouse.cpp:688
 msgid "Cannot add spline point: maximum number of points reached."
@@ -1605,21 +1625,24 @@ msgid ""
 msgstr ""
 
 #: solvespace.cpp:772
-#, c-format
+#, fuzzy, c-format
 msgid "Can't identify file type from file extension of filename '%s'; try .dxf or .dwg."
 msgstr ""
+"拡張子からファイル形式を特定できませんでした ( '%s' )。 \".dxf\" や \".dwg\" を試してください。"
 
 #: solvespace.cpp:824
+#, fuzzy
 msgid "Constraint must have a label, and must not be a reference dimension."
-msgstr ""
+msgstr "参照寸法ではなく、かつ、値のある拘束を選択してください。"
 
 #: solvespace.cpp:828
+#, fuzzy
 msgid "Bad selection for step dimension; select a constraint."
-msgstr ""
+msgstr "寸法の段階的変更には無効な選択です。値のある拘束を選択してください。"
 
 #: solvespace.cpp:852
 msgid "The assembly does not interfere, good."
-msgstr ""
+msgstr "部品の干渉はありませんでした。"
 
 #: solvespace.cpp:868
 #, c-format
@@ -1628,6 +1651,9 @@ msgid ""
 "\n"
 "    %s"
 msgstr ""
+"ソリッドモデルの容積:\n"
+"\n"
+"    %s"
 
 #: solvespace.cpp:877
 #, c-format
@@ -1687,11 +1713,11 @@ msgstr ""
 
 #: solvespace.cpp:944
 msgid "Bad selection for perimeter; select line segments, arcs, and curves."
-msgstr ""
+msgstr "外周長の計測には無効な選択です。直線セグメント、円弧、もしくは曲線を選択してください。"
 
 #: solvespace.cpp:960
 msgid "Bad selection for trace; select a single point."
-msgstr ""
+msgstr "点の位置の記録には無効な選択です。ひとつの点を選択してください。"
 
 #: solvespace.cpp:987
 #, fuzzy, c-format
@@ -1699,20 +1725,24 @@ msgid "Couldn't write to '%s'"
 msgstr "'%s' へ書き込めませんでした。"
 
 #: solvespace.cpp:1017
+#, fuzzy
 msgid "The mesh is self-intersecting (NOT okay, invalid)."
-msgstr ""
+msgstr "メッシュが自身と交差しています (警告)"
 
 #: solvespace.cpp:1018
+#, fuzzy
 msgid "The mesh is not self-intersecting (okay, valid)."
-msgstr ""
+msgstr "メッシュは自己交差していません (適切)"
 
 #: solvespace.cpp:1020
+#, fuzzy
 msgid "The mesh has naked edges (NOT okay, invalid)."
-msgstr ""
+msgstr "メッシュには浮いたエッジが含まれています (警告)"
 
 #: solvespace.cpp:1021
+#, fuzzy
 msgid "The mesh is watertight (okay, valid)."
-msgstr ""
+msgstr "メッシュには隙間はありません (適切)"
 
 #: solvespace.cpp:1024
 #, c-format
@@ -1721,6 +1751,9 @@ msgid ""
 "\n"
 "The model contains %d triangles, from %d surfaces."
 msgstr ""
+"\n"
+"\n"
+"モデルには %d 個のトライアングルがあり、これが %d 個のサーフェスを構成します。"
 
 #: solvespace.cpp:1028
 #, c-format
@@ -1760,19 +1793,21 @@ msgid ""
 msgstr ""
 
 #: style.cpp:185
+#, fuzzy
 msgid ""
 "Can't assign style to an entity that's derived from another entity; try assigning a style to this "
 "entity's parent."
 msgstr ""
+"他の要素から派生した要素には個別のスタイルを割り当てることはできません。親要素にスタイルを割り当て"
+"てください。"
 
 #: style.cpp:735
 msgid "Style name cannot be empty"
 msgstr "スタイル名は空にできません"
 
 #: textscreens.cpp:791
-#, fuzzy
 msgid "Can't repeat fewer than 1 time."
-msgstr "繰り返しは1以上の回数を指定してください。"
+msgstr "繰り返しは 1 以上の回数を指定してください。"
 
 #: textscreens.cpp:795
 msgid "Can't repeat more than 999 times."
@@ -1807,25 +1842,24 @@ msgid "Sketch arc of a circle"
 msgstr "円弧をスケッチ"
 
 #: toolbar.cpp:26
-#, fuzzy
 msgid "Sketch curves from text in a TrueType font"
-msgstr "TrueTypeフォントのテキストから曲線をスケッチ"
+msgstr "TrueTypeフォントのテキストからアウトラインをスケッチ"
 
 #: toolbar.cpp:28
 msgid "Sketch image from a file"
-msgstr ""
+msgstr "ファイルから画像を取り込む"
 
 #: toolbar.cpp:30
 msgid "Create tangent arc at selected point"
-msgstr ""
+msgstr "選択された点でフィレットを作る"
 
 #: toolbar.cpp:32
 msgid "Sketch cubic Bezier spline"
-msgstr ""
+msgstr "ベジェ曲線をスケッチ"
 
 #: toolbar.cpp:34
 msgid "Sketch datum point"
-msgstr ""
+msgstr "点をスケッチ"
 
 #: toolbar.cpp:36
 msgid "Toggle construction"
@@ -1909,15 +1943,15 @@ msgstr "直線上にコピーを作成"
 
 #: toolbar.cpp:80
 msgid "New group in new workplane (thru given entities)"
-msgstr ""
+msgstr "選択した要素で定義される作業平面でスケッチを開始"
 
 #: toolbar.cpp:82
 msgid "New group in 3d"
-msgstr ""
+msgstr "三次元空間内でスケッチを開始"
 
 #: toolbar.cpp:84
 msgid "New group linking / assembling file"
-msgstr ""
+msgstr "他のファイルをリンクする"
 
 #: toolbar.cpp:88
 msgid "Nearest isometric view"
@@ -1940,12 +1974,12 @@ msgstr "メッセージ"
 #: util.cpp:170
 msgctxt "button"
 msgid "&OK"
-msgstr ""
+msgstr "OK (&O)"
 
 #: view.cpp:127
 msgid "Scale cannot be zero or negative."
-msgstr ""
+msgstr "縮尺は 0 や負の値にはできません。"
 
 #: view.cpp:139 view.cpp:148
 msgid "Bad format: specify x, y, z"
-msgstr ""
+msgstr "書式が誤っています。\"x, y, z\" で指定してください。"
