@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: SolveSpace 3.0\n"
 "Report-Msgid-Bugs-To: whitequark@whitequark.org\n"
 "POT-Creation-Date: 2022-02-01 16:24+0200\n"
-"PO-Revision-Date: 2022-06-12 16:19+0900\n"
+"PO-Revision-Date: 2022-06-12 17:31+0900\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: ja_JP\n"
@@ -49,11 +49,11 @@ msgstr "移動方向を決めるために、点を2つ選択してください�
 
 #: clipboard.cpp:453
 msgid "Transformation is identity. So all copies will be exactly on top of each other."
-msgstr "移動が指定されましたが移動量が0です。すべてのコピーは同一位置にあります。"
+msgstr "移動量が 0 です。すべての複製は同一位置にあります。"
 
 #: clipboard.cpp:457
 msgid "Too many items to paste; split this into smaller pastes."
-msgstr "貼り付けるアイテムが多すぎます。分割してください。"
+msgstr "複製の数が多すぎます。分割してください。"
 
 #: clipboard.cpp:462
 msgid "No workplane active."
@@ -75,7 +75,7 @@ msgstr "透視投影の拡大率は、「表示 -> 透視投影で表示」を�
 #: confscreen.cpp:435 confscreen.cpp:445
 #, c-format
 msgid "Specify between 0 and %d digits after the decimal."
-msgstr ""
+msgstr "小数点以下の桁数は、0 から %d の範囲で指定してください。"
 
 #: confscreen.cpp:457
 msgid "Export scale must not be zero!"
@@ -83,7 +83,7 @@ msgstr "エクスポートの比率には0を指定できません。"
 
 #: confscreen.cpp:469
 msgid "Cutter radius offset must not be negative!"
-msgstr ""
+msgstr "ドリル径は負の値にできません。"
 
 #: confscreen.cpp:528
 msgid "Bad value: autosave interval should be positive"
@@ -453,11 +453,11 @@ msgstr ""
 
 #: constraint.cpp:813 mouse.cpp:1158
 msgid "NEW COMMENT -- DOUBLE-CLICK TO EDIT"
-msgstr ""
+msgstr "(コメント - ダブルクリックで編集)"
 
 #: constraint.cpp:818
 msgid "click center of comment text"
-msgstr ""
+msgstr "コメントテキストの中心をクリックで指定"
 
 #: export.cpp:19
 msgid ""
@@ -515,7 +515,7 @@ msgstr ""
 #: file.cpp:867
 msgctxt "title"
 msgid "Missing File"
-msgstr ""
+msgstr "不明ファイル"
 
 #: file.cpp:868
 #, c-format
@@ -534,17 +534,17 @@ msgstr ""
 #: file.cpp:873
 msgctxt "button"
 msgid "&Yes"
-msgstr ""
+msgstr "はい (&Y)"
 
 #: file.cpp:875
 msgctxt "button"
 msgid "&No"
-msgstr ""
+msgstr "いいえ (&N)"
 
 #: file.cpp:877 solvespace.cpp:611
 msgctxt "button"
 msgid "&Cancel"
-msgstr ""
+msgstr "キャンセル (&C)"
 
 #: graphicswin.cpp:41
 msgid "&File"
@@ -617,16 +617,17 @@ msgid "&Redo"
 msgstr "やり直し (&R)"
 
 #: graphicswin.cpp:63
+#, fuzzy
 msgid "Re&generate All"
-msgstr ""
+msgstr "すべて再生成 (&g)"
 
 #: graphicswin.cpp:65
 msgid "Snap Selection to &Grid"
-msgstr ""
+msgstr "選択したオブジェクトをグリッドに合わせる (&G)"
 
 #: graphicswin.cpp:66
 msgid "Rotate Imported &90°"
-msgstr ""
+msgstr "リンクした部品を90度回転する (&9)"
 
 #: graphicswin.cpp:68
 msgid "Cu&t"
@@ -642,7 +643,7 @@ msgstr "貼り付け (&P)"
 
 #: graphicswin.cpp:71
 msgid "Paste &Transformed..."
-msgstr ""
+msgstr "複製しながら貼り付け"
 
 #: graphicswin.cpp:72
 msgid "&Delete"
@@ -650,7 +651,7 @@ msgstr "削除 (&D)"
 
 #: graphicswin.cpp:74
 msgid "Select &Edge Chain"
-msgstr ""
+msgstr "接続しているエッジを選択"
 
 #: graphicswin.cpp:75
 msgid "Select &All"
@@ -662,11 +663,11 @@ msgstr "選択を解除 (&U)"
 
 #: graphicswin.cpp:78
 msgid "&Line Styles..."
-msgstr ""
+msgstr "線のスタイル... (&L)"
 
 #: graphicswin.cpp:79
 msgid "&View Projection..."
-msgstr ""
+msgstr "カメラの設定... (&V)"
 
 #: graphicswin.cpp:81
 msgid "Con&figuration..."
