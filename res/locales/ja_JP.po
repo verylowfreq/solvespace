@@ -1747,7 +1747,7 @@ msgstr ""
 "れません。プロパティブラウザの上部にあるボタンで非表示にできます。"
 
 #: solvespace.cpp:772
-#, fuzzy, c-format
+#, c-format
 msgid "Can't identify file type from file extension of filename '%s'; try .dxf or .dwg."
 msgstr ""
 "拡張子からファイル形式を特定できませんでした ( '%s' )。 \".dxf\" や \".dwg\" を試してください。"
@@ -1868,7 +1868,7 @@ msgid "Bad selection for trace; select a single point."
 msgstr "点の位置の記録には無効な選択です。ひとつの点を選択してください。"
 
 #: solvespace.cpp:987
-#, fuzzy, c-format
+#, c-format
 msgid "Couldn't write to '%s'"
 msgstr "'%s' へ書き込めませんでした。"
 
