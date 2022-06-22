@@ -1,7 +1,7 @@
-# SOME DESCRIPTIVE TITLE.
-# Copyright (C) YEAR the PACKAGE authors
+# Japanese translations for SolveSpace package.
+# Copyright (C) 2022 the Solvespace authors
 # This file is distributed under the same license as the SolveSpace package.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# verylowfreq, 2022.
 #
 msgid ""
 msgstr ""
@@ -9,7 +9,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: whitequark@whitequark.org\n"
 "POT-Creation-Date: 2022-02-01 16:24+0200\n"
 "PO-Revision-Date: 2022-06-13 20:47+0900\n"
-"Last-Translator: \n"
+"Last-Translator: https://github.com/verylowfreq\n"
 "Language-Team: \n"
 "Language: ja_JP\n"
 "MIME-Version: 1.0\n"
