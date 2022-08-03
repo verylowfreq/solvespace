@@ -27,6 +27,8 @@ New sketch features:
   * "Split Curves at Intersection" can now split curves at point lying on curve,
     not just at intersection of two curves.
   * Property browser now shows amount of degrees of freedom in group list.
+    It also shows a yellow "err" if the sketch has problems (e.g. self
+    intersecting) that would propagate in subsequent groups.
 
 New constraint features:
   * When dragging an arc or rectangle point, it will be automatically
@@ -111,6 +113,7 @@ Other new features:
     that are shortcuts to the respective configuration screens.
   * New cmake build options using -DENABLE_OPENMP=yes and -DENABLE_LTO=yes
     to enable support for multi-threading and link-time optimization.
+  * "Shift+Scroll" for ten times finer zoom.
 
 Bugs fixed:
   * Fixed broken --view options for command line thumbnail image creation.

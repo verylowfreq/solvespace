@@ -1,8 +1,8 @@
-<img src="https://avatars1.githubusercontent.com/u/18541596?s=70&v=4" width="70" height="70" alt="SolveSpace Logo" align="left">
+<img src="res/freedesktop/solvespace-scalable.svg" width="70" height="70" alt="SolveSpace Logo" align="left">
 
 SolveSpace
 ==========
-[![Build Status](https://travis-ci.com/solvespace/solvespace.svg?branch=master)](https://travis-ci.com/solvespace/solvespace)
+[![Build Status](https://github.com/solvespace/solvespace/workflows/CD/badge.svg)](https://github.com/solvespace/solvespace/actions)
 [![solvespace](https://snapcraft.io/solvespace/badge.svg)](https://snapcraft.io/solvespace)
 [![solvespace](https://snapcraft.io/solvespace/trending.svg?name=0)](https://snapcraft.io/solvespace)
 
@@ -94,13 +94,15 @@ After that, build SolveSpace as following:
 
     mkdir build
     cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=ON
     make
     sudo make install
 
+Link Time Optimization is supported by adding -DENABLE_LTO=ON to cmake at the
+expense of longer build time.
+
 The graphical interface is built as `build/bin/solvespace`, and the command-line interface
-is built as `build/bin/solvespace-cli`. It is possible to build only the command-line interface
-by passing the `-DENABLE_GUI=OFF` flag to the cmake invocation.
+is built as `build/bin/solvespace-cli`. It is possible to build only the command-line interface by passing the `-DENABLE_GUI=OFF` flag to the cmake invocation.
 
 ### Building for Windows
 
@@ -189,8 +191,11 @@ After that, build SolveSpace as following:
 
     mkdir build
     cd build
-    cmake .. -DCMAKE_BUILD_TYPE=Release
+    cmake .. -DCMAKE_BUILD_TYPE=Release -DENABLE_OPENMP=ON
     make
+
+Link Time Optimization is supported by adding -DENABLE_LTO=ON to cmake at the
+expense of longer build time.
 
 Alternatively, generate an XCode project, open it, and build the "Release" scheme:
 
@@ -289,6 +294,4 @@ and debug SolveSpace.
 License
 -------
 
-SolveSpace is distributed under the terms of the [GPL v3 license](COPYING.txt). It is possible
-to license SolveSpace for use in a commercial application; to do so,
-[contact](http://solvespace.com/contact.pl) the developers.
+SolveSpace is distributed under the terms of the [GPL v3 license](COPYING.txt).
