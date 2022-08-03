@@ -188,6 +188,7 @@ void FatalError(const std::string &message) {
 // Settings
 //-----------------------------------------------------------------------------
 
+#if false
 class SettingsImplWin32 final : public Settings {
 public:
     HKEY hKey = NULL;
@@ -264,6 +265,36 @@ public:
 SettingsRef GetSettings() {
     return std::make_shared<SettingsImplWin32>();
 }
+#endif
+
+// JSON backend
+
+#include "settings_json.h"
+
+/**
+ * @brief Get config path
+ * @param path 
+ * @return true if path is successfully retrieved, or false
+ */
+bool GetConfigPath(Path* path) {
+    if (!path) {
+        return false;
+    }
+    // FIXME: Test path. Only for debugging.
+    *path = Path::FromPortable("C:\\DATA-1\\solvespace-config.json");
+    return true;
+}
+
+
+SettingsRef GetSettings() {
+    std::string path;
+    if (GetConfigPath(&path)) {
+        return std::make_shared<SettingsJsonStore(path)>();
+    } else {
+        FatalError("Cannot determine Json config file path.");
+    }
+}
+
 
 //-----------------------------------------------------------------------------
 // Timers
