@@ -219,6 +219,7 @@ public:
     SSurface *GetSurfaceB(SShell *a, SShell *b) const;
 
     void Clear();
+    void GetAxisAlignedBounding(Vector *ptMax, Vector *ptMin) const;
 };
 
 // A segment of a curve by which a surface is trimmed: indicates which curve,
@@ -335,7 +336,7 @@ public:
     void PointOnCurve(const SBezier *curve, double *up, double *vp);
     Vector PointAt(double u, double v) const;
     Vector PointAt(Point2d puv) const;
-    void TangentsAt(double u, double v, Vector *tu, Vector *tv) const;
+    void TangentsAt(double u, double v, Vector *tu, Vector *tv, bool retry=true) const;
     Vector NormalAt(Point2d puv) const;
     Vector NormalAt(double u, double v) const;
     bool LineEntirelyOutsideBbox(Vector a, Vector b, bool asSegment) const;

@@ -1,5 +1,4 @@
 #!/bin/sh -xe
 
-brew update
-brew install freetype cairo
+brew install libomp
 git submodule update --init

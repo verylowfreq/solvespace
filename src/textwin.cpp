@@ -252,8 +252,8 @@ void TextWindow::Init() {
                     MouseLeave();
                     return true;
                 } else if(event.type == MouseEvent::Type::SCROLL_VERT) {
-                    window->SetScrollbarPosition(window->GetScrollbarPosition() -
-                                                 LINE_HEIGHT / 2 * event.scrollDelta);
+                    ScrollbarEvent(window->GetScrollbarPosition() -
+                                           LINE_HEIGHT / 2 * event.scrollDelta);
                 }
                 return false;
             };
@@ -338,11 +338,22 @@ void TextWindow::ClearScreen() {
     rows = 0;
 }
 
+// This message was addded when someone had too many fonts for the text window
+// Scrolling seemed to be broken, but was actaully at the MAX_ROWS.
+static const char* endString = "    **** End of Text Screen ****";
+
 void TextWindow::Printf(bool halfLine, const char *fmt, ...) {
     if(!canvas) return;
 
     if(rows >= MAX_ROWS) return;
 
+    if(rows >= MAX_ROWS-2 && (fmt != endString)) {
+        // twice due to some half-row issues on resizing
+        Printf(halfLine, endString);
+        Printf(halfLine, endString);
+        return;
+    }
+    
     va_list vl;
     va_start(vl, fmt);
 
@@ -1130,7 +1141,7 @@ void TextWindow::MouseLeave() {
 
 void TextWindow::ScrollbarEvent(double newPos) {
     if(window->IsEditorVisible()) {
-        window->SetScrollbarPosition(scrollPos);
+        // An edit field is active. Do not move the scrollbar.
         return;
     }
 
@@ -1140,6 +1151,7 @@ void TextWindow::ScrollbarEvent(double newPos) {
 
     if(newPos != scrollPos) {
         scrollPos = (int)newPos;
+        window->SetScrollbarPosition(scrollPos);
         window->Invalidate();
     }
 }
