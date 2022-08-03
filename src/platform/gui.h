@@ -7,6 +7,7 @@
 #ifndef SOLVESPACE_GUI_H
 #define SOLVESPACE_GUI_H
 
+namespace SolveSpace {
 class RgbaColor;
 
 namespace Platform {
@@ -387,5 +388,6 @@ void ExitGui();
 void ClearGui();
 
 }
+} // namespace SolveSpace
 
 #endif

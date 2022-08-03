@@ -7,6 +7,10 @@
 #ifndef SOLVESPACE_H
 #define SOLVESPACE_H
 
+#include "resource.h"
+#include "platform/platform.h"
+#include "platform/gui.h"
+
 #include <cctype>
 #include <climits>
 #include <cmath>
@@ -122,9 +126,6 @@ static constexpr double LENGTH_EPS    =  1e-6;
 static constexpr double VERY_POSITIVE =  1e10;
 static constexpr double VERY_NEGATIVE = -1e10;
 
-#include "platform/platform.h"
-#include "platform/gui.h"
-#include "resource.h"
 
 using Platform::AllocTemporary;
 using Platform::FreeAllTemporary;
@@ -138,7 +139,8 @@ enum class Command : uint32_t;
 enum class Unit : uint32_t {
     MM = 0,
     INCHES,
-    METERS
+    METERS,
+    FEET_INCHES
 };
 
 template<class Key, class T>
@@ -259,7 +261,7 @@ public:
 
     static const double RANK_MAG_TOLERANCE, CONVERGE_TOLERANCE;
     int CalculateRank();
-    bool TestRank(int *rank = NULL);
+    bool TestRank(int *dof = NULL);
     static bool SolveLinearSystem(double X[], double A[][MAX_UNKNOWNS],
                                   double B[], int N);
     bool SolveLeastSquares();
@@ -277,7 +279,6 @@ public:
     bool NewtonSolve(int tag);
 
     void MarkParamsFree(bool findFree);
-    int CalculateDof();
 
     SolveResult Solve(Group *g, int *rank = NULL, int *dof = NULL,
                       List<hConstraint> *bad = NULL,
@@ -289,6 +290,9 @@ public:
                           bool andFindBad = false, bool andFindFree = false);
 
     void Clear();
+    Param *GetLastParamSubstitution(Param *p);
+    void SubstituteParamsByLast(Expr *e);
+    void SortSubstitutionByDragged(Param *p);
 };
 
 #include "ttf.h"
@@ -597,6 +601,7 @@ public:
     }        exportCanvas;
     struct {
         double  depth;
+        double  safeHeight;
         int     passes;
         double  feed;
         double  plungeFeed;
@@ -608,8 +613,10 @@ public:
     int      afterDecimalDegree;
     bool     useSIPrefixes;
     int      autosaveInterval; // in minutes
+    bool     explode;
+    double   explodeDistance;
 
-    std::string MmToString(double v);
+    std::string MmToString(double v, bool editable=false);
     std::string MmToStringSI(double v, int dim = 0);
     std::string DegreeToString(double v);
     double ExprToMm(Expr *e);
@@ -812,6 +819,7 @@ public:
 void ImportDxf(const Platform::Path &file);
 void ImportDwg(const Platform::Path &file);
 bool LinkIDF(const Platform::Path &filename, EntityList *le, SMesh *m, SShell *sh);
+bool LinkStl(const Platform::Path &filename, EntityList *le, SMesh *m, SShell *sh);
 
 extern SolveSpaceUI SS;
 extern Sketch SK;

@@ -33,7 +33,13 @@
 
 #if defined(HAVE_SPACEWARE)
 #   include <spnav.h>
-#   include <gdk/gdkx.h>
+#   include <gdk/gdk.h>
+#   if defined(GDK_WINDOWING_X11)
+#       include <gdk/gdkx.h>
+#   endif
+#   if defined(GDK_WINDOWING_WAYLAND)
+#       include <gdk/gdkwayland.h>
+#   endif
 #   if GTK_CHECK_VERSION(3, 20, 0)
 #       include <gdkmm/seat.h>
 #   else
@@ -222,6 +228,10 @@ public:
             }
             return false;
         };
+        // Note: asan warnings about new-delete-type-mismatch are false positives here:
+        // https://gitlab.gnome.org/GNOME/gtkmm/-/issues/65
+        // Pass new_delete_type_mismatch=0 to ASAN_OPTIONS to disable those warnings.
+        // Unfortunately they won't go away until upgrading to gtkmm4
         _connection = Glib::signal_timeout().connect(handler, milliseconds);
     }
 };
@@ -1043,7 +1053,7 @@ WindowRef CreateWindow(Window::Kind kind, WindowRef parentWindow) {
 void Open3DConnexion() {}
 void Close3DConnexion() {}
 
-#if defined(HAVE_SPACEWARE) && defined(GDK_WINDOWING_X11)
+#if defined(HAVE_SPACEWARE) && (defined(GDK_WINDOWING_X11) || defined(GDK_WINDOWING_WAYLAND))
 static void ProcessSpnavEvent(WindowImplGtk *window, const spnav_event &spnavEvent, bool shiftDown, bool controlDown) {
     switch(spnavEvent.type) {
         case SPNAV_EVENT_MOTION: {
@@ -1125,17 +1135,26 @@ void Request3DConnexionEventsForWindow(WindowRef window) {
         std::static_pointer_cast<WindowImplGtk>(window);
 
     Glib::RefPtr<Gdk::Window> gdkWindow = windowImpl->gtkWindow.get_window();
-    if(!GDK_IS_X11_DISPLAY(gdkWindow->get_display()->gobj())) {
-        return;
+#if defined(GDK_WINDOWING_X11)
+    if(GDK_IS_X11_DISPLAY(gdkWindow->get_display()->gobj())) {
+        if(spnav_x11_open(gdk_x11_get_default_xdisplay(),
+                          gdk_x11_window_get_xid(gdkWindow->gobj())) != -1) {
+            gdkWindow->add_filter(GdkSpnavFilter, windowImpl.get());
+        } else if(spnav_open() != -1) {
+            g_io_add_watch(g_io_channel_unix_new(spnav_fd()), G_IO_IN,
+                           ConsumeSpnavQueue, windowImpl.get());
+        }
     }
+#endif
+#if defined(GDK_WINDOWING_WAYLAND)
+    if(GDK_IS_WAYLAND_DISPLAY(gdkWindow->get_display()->gobj())) {
+	if(spnav_open() != -1) {
+            g_io_add_watch(g_io_channel_unix_new(spnav_fd()), G_IO_IN,
+                           ConsumeSpnavQueue, windowImpl.get());
+        }
+    }
+#endif
 
-    if(spnav_x11_open(gdk_x11_get_default_xdisplay(),
-                      gdk_x11_window_get_xid(gdkWindow->gobj())) != -1) {
-        gdkWindow->add_filter(GdkSpnavFilter, windowImpl.get());
-    } else if(spnav_open() != -1) {
-        g_io_add_watch(g_io_channel_unix_new(spnav_fd()), G_IO_IN,
-                       ConsumeSpnavQueue, windowImpl.get());
-    }
 }
 #else
 void Request3DConnexionEventsForWindow(WindowRef window) {}
@@ -1341,7 +1360,7 @@ public:
             return;
 
         Platform::Path path = GetFilename();
-        if(gtkChooser->get_action() != GTK_FILE_CHOOSER_ACTION_OPEN) {
+        if(gtkChooser->get_action() != Gtk::FILE_CHOOSER_ACTION_OPEN) {
             SetCurrentName(path.WithExtension(extension).FileName());
         }
     }

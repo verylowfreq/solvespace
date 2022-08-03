@@ -33,8 +33,14 @@ bool System::WriteJacobian(int tag) {
     }
     mat.n = j;
 
-    int i = 0;
+    // Fill the param id to index map
+    std::map<uint32_t, int> paramToIndex;
+    for(int j = 0; j < mat.n; j++) {
+        paramToIndex[mat.param[j].v] = j;
+    }
 
+    int i = 0;
+    Expr *zero = Expr::From(0.0);
     for(auto &e : eq) {
         if(i >= MAX_UNKNOWNS) return false;
 
@@ -42,24 +48,26 @@ bool System::WriteJacobian(int tag) {
             continue;
 
         mat.eq[i] = e.h;
-        Expr *f   = e.e->DeepCopyWithParamsAsPointers(&param, &(SK.param));
-        f = f->FoldConstants();
+        Expr *f = e.e->FoldConstants();
+        f = f->DeepCopyWithParamsAsPointers(&param, &(SK.param));
 
-        // Hash table (61 bits) to accelerate generation of zero partials.
-        uint64_t scoreboard = f->ParamsUsed();
         for(j = 0; j < mat.n; j++) {
-            Expr *pd;
-            if(scoreboard & ((uint64_t)1 << (mat.param[j].v % 61)) &&
-                f->DependsOn(mat.param[j]))
-            {
-                pd = f->PartialWrt(mat.param[j]);
-                pd = pd->FoldConstants();
-                pd = pd->DeepCopyWithParamsAsPointers(&param, &(SK.param));
-            } else {
-                pd = Expr::From(0.0);
-            }
-            mat.A.sym[i][j] = pd;
+            mat.A.sym[i][j] = zero;
         }
+
+        List<hParam> paramsUsed = {};
+        f->ParamsUsedList(&paramsUsed);
+
+        for(hParam &p : paramsUsed) {
+            auto j = paramToIndex.find(p.v);
+            if(j == paramToIndex.end()) continue;
+            Expr *pd = f->PartialWrt(p);
+            pd = pd->FoldConstants();
+            if(pd->IsZeroConst())
+                continue;
+            mat.A.sym[i][j->second] = pd;
+        }
+        paramsUsed.Clear();
         mat.B.sym[i] = f;
         i++;
     }
@@ -85,6 +93,60 @@ bool System::IsDragged(hParam p) {
     return false;
 }
 
+Param *System::GetLastParamSubstitution(Param *p) {
+    Param *current = p;
+    while(current->substd != NULL) {
+        current = current->substd;
+        if(current == p) {
+            // Break the loop
+            current->substd = NULL;
+            break;
+        }
+    }
+    return current;
+}
+
+void System::SortSubstitutionByDragged(Param *p) {
+    std::vector<Param *> subsParams;
+    Param *by = NULL;
+    Param *current = p;
+    while(current != NULL) {
+        subsParams.push_back(current);
+        if(IsDragged(current->h)) {
+            by = current;
+        }
+        current = current->substd;
+    }
+    if(by == NULL) by = p;
+    for(Param *p : subsParams) {
+       if(p == by) continue;
+       p->substd = by;
+       p->tag = VAR_SUBSTITUTED;
+    }
+    by->substd = NULL;
+    by->tag = 0;
+}
+
+void System::SubstituteParamsByLast(Expr *e) {
+    ssassert(e->op != Expr::Op::PARAM_PTR, "Expected an expression that refer to params via handles");
+
+    if(e->op == Expr::Op::PARAM) {
+        Param *p = param.FindByIdNoOops(e->parh);
+        if(p != NULL) {
+            Param *s = GetLastParamSubstitution(p);
+            if(s != NULL) {
+                e->parh = s->h;
+            }
+        }
+    } else {
+        int c = e->Children();
+        if(c >= 1) {
+            SubstituteParamsByLast(e->a);
+            if(c >= 2) SubstituteParamsByLast(e->b);
+        }
+    }
+}
+
 void System::SolveBySubstitution() {
     for(auto &teq : eq) {
         Expr *tex = teq.e;
@@ -102,25 +164,47 @@ void System::SolveBySubstitution() {
                 continue;
             }
 
-            if(IsDragged(a)) {
-                // A is being dragged, so A should stay, and B should go
-                std::swap(a, b);
+            if(a.v == b.v) {
+                teq.tag = EQ_SUBSTITUTED;
+                continue;
             }
 
-            for(auto &req : eq) {
-                req.e->Substitute(a, b); // A becomes B, B unchanged
-            }
-            for(auto &rp : param) {
-                if(rp.substd == a) {
-                    rp.substd = b;
+            Param *pa = param.FindById(a);
+            Param *pb = param.FindById(b);
+
+            // Take the last substitution of parameter a
+            // This resulted in creation of substitution chains
+            Param *last = GetLastParamSubstitution(pa);
+            last->substd = pb;
+            last->tag = VAR_SUBSTITUTED;
+
+            if(pb->substd != NULL) {
+                // Break the loops
+                GetLastParamSubstitution(pb);
+                // if b loop was broken
+                if(pb->substd == NULL) {
+                    // Clear substitution
+                    pb->tag = 0;
                 }
             }
-            Param *ptr = param.FindById(a);
-            ptr->tag = VAR_SUBSTITUTED;
-            ptr->substd = b;
-
             teq.tag = EQ_SUBSTITUTED;
         }
+    }
+
+    //
+    for(Param &p : param) {
+        SortSubstitutionByDragged(&p);
+    }
+
+    // Substitute all the equations
+    for(auto &req : eq) {
+        SubstituteParamsByLast(req.e);
+    }
+
+    // Substitute all the parameters with last substitutions
+    for(auto &p : param) {
+        if(p.substd == NULL) continue;
+        p.substd = GetLastParamSubstitution(p.substd);
     }
 }
 
@@ -166,10 +250,12 @@ int System::CalculateRank() {
     return rank;
 }
 
-bool System::TestRank(int *rank) {
+bool System::TestRank(int *dof) {
     EvalJacobian();
     int jacobianRank = CalculateRank();
-    if(rank) *rank = jacobianRank;
+    // We are calculating dof based on real rank, not mat.m.
+    // Using this approach we can calculate real dof even when redundant is allowed.
+    if(dof != NULL) *dof = mat.n - jacobianRank;
     return jacobianRank == mat.m;
 }
 
@@ -422,9 +508,9 @@ SolveResult System::Solve(Group *g, int *rank, int *dof, List<hConstraint> *bad,
     param.ClearTags();
     eq.ClearTags();
 
-    // Solving by substitution eliminates duplicate e.g. H/V constraints, which can cause rank test
-    // to succeed even on overdefined systems, which will fail later.
-    if(!forceDofCheck) {
+    // Since we are suppressing dof calculation or allowing redundant, we
+    // can't / don't want to catch result of dof checking without substitution
+    if(g->suppressDofCalculation || g->allowRedundant || !forceDofCheck) {
         SolveBySubstitution();
     }
 
@@ -462,22 +548,21 @@ SolveResult System::Solve(Group *g, int *rank, int *dof, List<hConstraint> *bad,
     if(!WriteJacobian(0)) {
         return SolveResult::TOO_MANY_UNKNOWNS;
     }
-
-    rankOk = TestRank(rank);
+    // Clear dof value in order to have indication when dof is actually not calculated
+    if(dof != NULL) *dof = -1;
+    // We are suppressing or allowing redundant, so we no need to catch unsolveable + redundant
+    rankOk = (!g->suppressDofCalculation && !g->allowRedundant) ? TestRank(dof) : true;
 
     // And do the leftovers as one big system
     if(!NewtonSolve(0)) {
         goto didnt_converge;
     }
 
-    rankOk = TestRank(rank);
+    // Here we are want to calculate dof even when redundant is allowed, so just handle suppressing
+    rankOk = (!g->suppressDofCalculation) ? TestRank(dof) : true;
     if(!rankOk) {
         if(andFindBad) FindWhichToRemoveToFixJacobian(g, bad, forceDofCheck);
     } else {
-        // This is not the full Jacobian, but any substitutions or single-eq
-        // solves removed one equation and one unknown, therefore no effect
-        // on the number of DOF.
-        if(dof) *dof = CalculateDof();
         MarkParamsFree(andFindFree);
     }
     // System solved correctly, so write the new values back in to the
@@ -485,7 +570,7 @@ SolveResult System::Solve(Group *g, int *rank, int *dof, List<hConstraint> *bad,
     for(auto &p : param) {
         double val;
         if(p.tag == VAR_SUBSTITUTED) {
-            val = param.FindById(p.substd)->val;
+            val = p.substd->val;
         } else {
             val = p.val;
         }
@@ -534,11 +619,14 @@ SolveResult System::SolveRank(Group *g, int *rank, int *dof, List<hConstraint> *
         return SolveResult::TOO_MANY_UNKNOWNS;
     }
 
-    bool rankOk = TestRank(rank);
+    bool rankOk = TestRank(dof);
     if(!rankOk) {
-        if(andFindBad) FindWhichToRemoveToFixJacobian(g, bad, /*forceDofCheck=*/true);
+        // When we are testing with redundant allowed, we don't want to have additional info
+        // about redundants since this test is working only for single redundant constraint
+        if(!g->suppressDofCalculation && !g->allowRedundant) {
+            if(andFindBad) FindWhichToRemoveToFixJacobian(g, bad, true);
+        }
     } else {
-        if(dof) *dof = CalculateDof();
         MarkParamsFree(andFindFree);
     }
     return rankOk ? SolveResult::OKAY : SolveResult::REDUNDANT_OKAY;
@@ -571,9 +659,5 @@ void System::MarkParamsFree(bool find) {
             }
         }
     }
-}
-
-int System::CalculateDof() {
-    return mat.n - mat.m;
 }
 
