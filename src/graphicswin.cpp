@@ -1232,6 +1232,8 @@ void GraphicsWindow::MenuRequest(Command id) {
             if(SS.GW.gs.n == 1 && SS.GW.gs.workplanes == 1) {
                 // A user-selected workplane
                 g->activeWorkplane = SS.GW.gs.entity[0];
+                SS.GW.EnsureValidActives();
+                SS.ScheduleShowTW();
             } else if(g->type == Group::Type::DRAWING_WORKPLANE) {
                 // The group's default workplane
                 g->activeWorkplane = g->h.entity(0);
@@ -1246,6 +1248,8 @@ void GraphicsWindow::MenuRequest(Command id) {
                         "not have a default workplane. Try selecting a "
                         "workplane, or activating a sketch-in-new-workplane "
                         "group."));
+                //update checkboxes in the menus
+                SS.GW.EnsureValidActives();
             }
             break;
         }

@@ -305,9 +305,16 @@ void GraphicsWindow::GroupSelection() {
 
 Camera GraphicsWindow::GetCamera() const {
     Camera camera = {};
-    window->GetContentSize(&camera.width, &camera.height);
-    camera.pixelRatio = window->GetDevicePixelRatio();
-    camera.gridFit    = (window->GetDevicePixelRatio() == 1);
+    if(window) {
+        window->GetContentSize(&camera.width, &camera.height);
+        camera.pixelRatio = window->GetDevicePixelRatio();
+        camera.gridFit    = (window->GetDevicePixelRatio() == 1);
+    } else {    // solvespace-cli
+        camera.width = 297.0;   // A4? Whatever...
+        camera.height = 210.0;
+        camera.pixelRatio = 1.0;
+        camera.gridFit    = camera.pixelRatio == 1.0;
+    }
     camera.offset     = offset;
     camera.projUp     = projUp;
     camera.projRight  = projRight;
@@ -353,18 +360,34 @@ GraphicsWindow::Selection GraphicsWindow::ChooseFromHoverToSelect() {
     return sel;
 }
 
+// This uses the same logic as hovering and static entity selection
+// but ignores points known not to be draggable
 GraphicsWindow::Selection GraphicsWindow::ChooseFromHoverToDrag() {
     Selection sel = {};
-    for(const Hover &hov : hoverList) {
-        if(hov.selection.entity.v == 0) continue;
-        if(!hov.selection.entity.isFromRequest()) continue;
-        sel = hov.selection;
-        break;
-    }
-    if(!sel.IsEmpty()) {
+    if(hoverList.IsEmpty())
         return sel;
+
+    Group *activeGroup = SK.GetGroup(SS.GW.activeGroup);
+    int bestOrder = -1;
+    int bestZIndex = 0;
+    for(const Hover &hov : hoverList) {
+        hGroup hg = {};
+        if(hov.selection.entity.v != 0) {
+            Entity *e = SK.GetEntity(hov.selection.entity);
+            if (!e->CanBeDragged()) continue;
+            hg = e->group;
+        } else if(hov.selection.constraint.v != 0) {
+            hg = SK.GetConstraint(hov.selection.constraint)->group;
+        }
+
+        Group *g = SK.GetGroup(hg);
+        if(g->order > activeGroup->order) continue;
+        if(bestOrder != -1 && (bestOrder >= g->order || bestZIndex > hov.zIndex)) continue;
+        bestOrder  = g->order;
+        bestZIndex = hov.zIndex;
+        sel = hov.selection;
     }
-    return ChooseFromHoverToSelect();
+    return sel;
 }
 
 void GraphicsWindow::HitTestMakeSelection(Point2d mp) {

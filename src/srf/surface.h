@@ -92,12 +92,12 @@ public:
     Vector Start() const;
     Vector Finish() const;
     bool Equals(SBezier *b) const;
-    void MakePwlInto(SEdgeList *sel, double chordTol=0) const;
-    void MakePwlInto(List<SCurvePt> *l, double chordTol=0) const;
-    void MakePwlInto(SContour *sc, double chordTol=0) const;
-    void MakePwlInto(List<Vector> *l, double chordTol=0) const;
-    void MakePwlWorker(List<Vector> *l, double ta, double tb, double chordTol) const;
-    void MakePwlInitialWorker(List<Vector> *l, double ta, double tb, double chordTol) const;
+    void MakePwlInto(SEdgeList *sel, double chordTol=0, double max_dt=0.0) const;
+    void MakePwlInto(List<SCurvePt> *l, double chordTol=0, double max_dt=0.0) const;
+    void MakePwlInto(SContour *sc, double chordTol=0, double max_dt=0.0) const;
+    void MakePwlInto(List<Vector> *l, double chordTol=0, double max_dt=0.0) const;
+    void MakePwlWorker(List<Vector> *l, double ta, double tb, double chordTol, double max_dt) const;
+    void MakePwlInitialWorker(List<Vector> *l, double ta, double tb, double chordTol, double max_dt) const;
     void MakeNonrationalCubicInto(SBezierList *bl, double tolerance, int depth = 0) const;
 
     void AllIntersectionsWith(const SBezier *sbb, SPointList *spl) const;
@@ -332,6 +332,7 @@ public:
     bool PointIntersectingLine(Vector p0, Vector p1, double *u, double *v) const;
     Vector ClosestPointOnThisAndSurface(SSurface *srf2, Vector p);
     void PointOnSurfaces(SSurface *s1, SSurface *s2, double *u, double *v);
+    void PointOnCurve(const SBezier *curve, double *up, double *vp);
     Vector PointAt(double u, double v) const;
     Vector PointAt(Point2d puv) const;
     void TangentsAt(double u, double v, Vector *tu, Vector *tv) const;
@@ -341,6 +342,7 @@ public:
     void GetAxisAlignedBounding(Vector *ptMax, Vector *ptMin) const;
     bool CoincidentWithPlane(Vector n, double d) const;
     bool CoincidentWith(SSurface *ss, bool sameNormal) const;
+    bool ContainsPlaneCurve(SCurve *sc) const;
     bool IsExtrusion(SBezier *of, Vector *along) const;
     bool IsCylinder(Vector *axis, Vector *center, double *r,
                         Vector *start, Vector *finish) const;
@@ -362,8 +364,9 @@ public:
     void MakeClassifyingBsp(SShell *shell, SShell *useCurvesFrom);
     double ChordToleranceForEdge(Vector a, Vector b) const;
     void MakeTriangulationGridInto(List<double> *l, double vs, double vf,
-                                    bool swapped) const;
+                                    bool swapped, int depth) const;
     Vector PointAtMaybeSwapped(double u, double v, bool swapped) const;
+    Vector NormalAtMaybeSwapped(double u, double v, bool swapped) const;
 
     void Reverse();
     void Clear();

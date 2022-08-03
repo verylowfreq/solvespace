@@ -98,6 +98,10 @@ if(CMAKE_SYSTEM_PROCESSOR STREQUAL "i686" OR CMAKE_SYSTEM_PROCESSOR STREQUAL "X8
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLOAT_FLAGS}")
 endif()
 
+if(ENABLE_LTO)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
+endif()
+
 if(ENABLE_OPENMP)
     include(FindOpenMP)
     if(OpenMP_FOUND)
@@ -185,6 +189,14 @@ add_subdirectory(extlib/flatbuffers EXCLUDE_FROM_ALL)
 message(STATUS "Using in-tree q3d")
 add_subdirectory(extlib/q3d)
 set(Q3D_INCLUDE_DIR ${CMAKE_BINARY_DIR}/extlib/q3d)
+
+message(STATUS "Using in-tree mimalloc")
+set(MI_OVERRIDE OFF CACHE BOOL "")
+set(MI_BUILD_SHARED OFF CACHE BOOL "")
+set(MI_BUILD_OBJECT OFF CACHE BOOL "")
+set(MI_BUILD_TESTS OFF CACHE BOOL "")
+add_subdirectory(extlib/mimalloc EXCLUDE_FROM_ALL)
+set(MIMALLOC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/extlib/mimalloc/include)
 
 if(WIN32 OR APPLE OR EMSCRIPTEN)
     # On Win32 and macOS we use vendored packages, since there is little to no benefit

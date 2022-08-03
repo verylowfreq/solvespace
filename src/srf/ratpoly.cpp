@@ -173,18 +173,18 @@ void SBezier::SplitAt(double t, SBezier *bef, SBezier *aft) const {
     }
 }
 
-void SBezier::MakePwlInto(SEdgeList *sel, double chordTol) const {
+void SBezier::MakePwlInto(SEdgeList *sel, double chordTol, double max_dt) const {
     List<Vector> lv = {};
-    MakePwlInto(&lv, chordTol);
+    MakePwlInto(&lv, chordTol, max_dt);
     int i;
     for(i = 1; i < lv.n; i++) {
         sel->AddEdge(lv[i-1], lv[i]);
     }
     lv.Clear();
 }
-void SBezier::MakePwlInto(List<SCurvePt> *l, double chordTol) const {
+void SBezier::MakePwlInto(List<SCurvePt> *l, double chordTol, double max_dt) const {
     List<Vector> lv = {};
-    MakePwlInto(&lv, chordTol);
+    MakePwlInto(&lv, chordTol, max_dt);
     int i;
     for(i = 0; i < lv.n; i++) {
         SCurvePt scpt;
@@ -195,32 +195,42 @@ void SBezier::MakePwlInto(List<SCurvePt> *l, double chordTol) const {
     }
     lv.Clear();
 }
-void SBezier::MakePwlInto(SContour *sc, double chordTol) const {
+void SBezier::MakePwlInto(SContour *sc, double chordTol, double max_dt) const {
     List<Vector> lv = {};
-    MakePwlInto(&lv, chordTol);
+    MakePwlInto(&lv, chordTol, max_dt);
     int i;
     for(i = 0; i < lv.n; i++) {
         sc->AddPoint(lv[i]);
     }
     lv.Clear();
 }
-void SBezier::MakePwlInto(List<Vector> *l, double chordTol) const {
+//--------------------------------------------------------------------------------------
+// all variants of MakePwlInto come here. Split a rational Bezier into Piecewise Linear
+// segments that don't deviate from the actual curve by more than the chordTol distance.
+// max_dt allows to force curves to be split into spans of no more than a certain
+// length based on t-parameter. RemoveShortSegments() may delete points when dt <= 0.1
+//--------------------------------------------------------------------------------------
+void SBezier::MakePwlInto(List<Vector> *l, double chordTol, double max_dt) const {
     if(EXACT(chordTol == 0)) {
         // Use the default chord tolerance.
         chordTol = SS.ChordTolMm();
     }
+    // Never do fewer than three intermediate points for curves; people seem to get
+    // unhappy when their circles turn into squares, but maybe less
+    // unhappy with octagons. Now 16-gons.
+    if (EXACT(max_dt == 0.0)) {
+        max_dt = (deg == 1) ? 1.0 : 0.25;
+    }
     l->Add(&(ctrl[0]));
-    if(deg == 1) {
+    // don't split first degee (lines) unless asked to by the caller via max_dt
+    if((deg == 1) && (max_dt >= 1.0)) {
         l->Add(&(ctrl[1]));
     } else {
-        // Never do fewer than one intermediate point; people seem to get
-        // unhappy when their circles turn into squares, but maybe less
-        // unhappy with octagons.
-        MakePwlInitialWorker(l, 0.0, 0.5, chordTol);
-        MakePwlInitialWorker(l, 0.5, 1.0, chordTol);
+        MakePwlInitialWorker(l, 0.0, 0.5, chordTol, max_dt);
+        MakePwlInitialWorker(l, 0.5, 1.0, chordTol, max_dt);
     }
 }
-void SBezier::MakePwlWorker(List<Vector> *l, double ta, double tb, double chordTol) const
+void SBezier::MakePwlWorker(List<Vector> *l, double ta, double tb, double chordTol, double max_dt) const
 {
     Vector pa = PointAt(ta);
     Vector pb = PointAt(tb);
@@ -229,16 +239,16 @@ void SBezier::MakePwlWorker(List<Vector> *l, double ta, double tb, double chordT
     double d = pm.DistanceToLine(pa, pb.Minus(pa));
 
     double step = 1.0/SS.GetMaxSegments();
-    if((tb - ta) < step || d < chordTol) {
+    if(((tb - ta) < step || d < chordTol) && ((tb-ta) <= max_dt) ) {
         // A previous call has already added the beginning of our interval.
         l->Add(&pb);
     } else {
         double tm = (ta + tb) / 2;
-        MakePwlWorker(l, ta, tm, chordTol);
-        MakePwlWorker(l, tm, tb, chordTol);
+        MakePwlWorker(l, ta, tm, chordTol, max_dt);
+        MakePwlWorker(l, tm, tb, chordTol, max_dt);
     }
 }
-void SBezier::MakePwlInitialWorker(List<Vector> *l, double ta, double tb, double chordTol) const
+void SBezier::MakePwlInitialWorker(List<Vector> *l, double ta, double tb, double chordTol, double max_dt) const
 {
     Vector pa = PointAt(ta);
     Vector pb = PointAt(tb);
@@ -259,13 +269,13 @@ void SBezier::MakePwlInitialWorker(List<Vector> *l, double ta, double tb, double
                 });
 
     double step = 1.0/SS.GetMaxSegments();
-    if( ((tb - ta) < step || d < chordTol) && ((tb-ta) < 0.2) ) {
+    if( ((tb - ta) < step || d < chordTol) && ((tb-ta) <= max_dt) ) {
         // A previous call has already added the beginning of our interval.
         l->Add(&pb);
     } else {
         double tm = (ta + tb) / 2;
-        MakePwlWorker(l, ta, tm, chordTol);
-        MakePwlWorker(l, tm, tb, chordTol);
+        MakePwlWorker(l, ta, tm, chordTol, max_dt);
+        MakePwlWorker(l, tm, tb, chordTol, max_dt);
     }
 }
 
@@ -437,11 +447,13 @@ void SSurface::ClosestPointTo(Vector p, double *u, double *v, bool mustConverge)
 
     // If we failed to converge, then at least don't return NaN.
     if(mustConverge) {
-        Vector p0 = PointAt(*u, *v);
-        dbp("didn't converge");
-        dbp("have %.3f %.3f %.3f", CO(p0));
-        dbp("want %.3f %.3f %.3f", CO(p));
-        dbp("distance = %g", (p.Minus(p0)).Magnitude());
+// This is expected not to converge when the target point is not on the surface but nearby.
+// let's not pollute the output window for normal use.
+//        Vector p0 = PointAt(*u, *v);
+//        dbp("didn't converge");
+//        dbp("have %.3f %.3f %.3f", CO(p0));
+//        dbp("want %.3f %.3f %.3f", CO(p));
+//        dbp("distance = %g", (p.Minus(p0)).Magnitude());
     }
     if(IsReasonable(*u) || IsReasonable(*v)) {
         *u = *v = 0;
@@ -490,7 +502,7 @@ bool SSurface::ClosestPointNewton(Vector p, double *u, double *v, bool mustConve
 bool SSurface::PointIntersectingLine(Vector p0, Vector p1, double *u, double *v) const
 {
     int i;
-    for(i = 0; i < 15; i++) {
+    for(i = 0; i < 20; i++) {
         Vector pi, p, tu, tv;
         p = PointAt(*u, *v);
         TangentsAt(*u, *v, &tu, &tv);
@@ -500,7 +512,10 @@ bool SSurface::PointIntersectingLine(Vector p0, Vector p1, double *u, double *v)
 
         bool parallel;
         pi = Vector::AtIntersectionOfPlaneAndLine(n, d, p0, p1, &parallel);
-        if(parallel) break;
+        if(parallel) {
+            dbp("parallel (surface intersecting line)");
+            break;
+        }
 
         // Check for convergence
         if(pi.Equals(p, RATPOLY_EPS)) return true;
@@ -607,7 +622,10 @@ void SSurface::PointOnSurfaces(SSurface *s1, SSurface *s2, double *up, double *v
         Vector pi = Vector::AtIntersectionOfPlanes(n[0], d[0],
                                                    n[1], d[1],
                                                    n[2], d[2], &parallel);
-        if(parallel) break;
+
+        if(parallel) { // lets try something else for parallel planes
+            pi = p[0].Plus(p[1]).Plus(p[2]).ScaledBy(1.0/3.0);
+        }
 
         for(j = 0; j < 3; j++) {
             Vector n = tu[j].Cross(tv[j]);
@@ -622,5 +640,60 @@ void SSurface::PointOnSurfaces(SSurface *s1, SSurface *s2, double *up, double *v
         }
     }
     dbp("didn't converge (three surfaces intersecting)");
+}
+
+void SSurface::PointOnCurve(const SBezier *curve, double *up, double *vp)
+{
+    Vector tu,tv,n;
+    double u = *up, v = *vp;
+    Vector ps = PointAt(u, v);
+    // Get initial guesses for t on the curve
+    double tCurve = 0.5;
+    curve->ClosestPointTo(ps, &tCurve, /*mustConverge=*/false);
+    if(tCurve < 0.0) tCurve = 0.0;
+    if(tCurve > 1.0) tCurve = 1.0;
+
+    for(int i = 0; i < 30; i++) {
+        // Approximate the surface by a plane
+        Vector ps = PointAt(u, v);
+        TangentsAt(u, v, &tu, &tv);
+        n = tu.Cross(tv).WithMagnitude(1);
+
+        // point on curve and tangent line direction
+        Vector pc = curve->PointAt(tCurve);
+        Vector tc = curve->TangentAt(tCurve);
+
+        if(ps.Equals(pc, RATPOLY_EPS)) {
+            *up = u;
+            *vp = v;
+            return;
+        }
+
+        //pi is where the curve tangent line intersects the surface tangent plane
+        Vector pi;
+        double d = tc.Dot(n);
+        if (fabs(d) < 1e-10) { // parallel line and plane, guess the average rather than fail
+            pi = pc.Plus(ps).ScaledBy(0.5);
+        } else {
+            pi = pc.Minus(tc.ScaledBy(pc.Minus(ps).Dot(n)/d));
+        }
+
+        // project the point onto the tangent plane and line
+        {
+            Vector n = tu.Cross(tv);
+            Vector ty = n.Cross(tu).ScaledBy(1.0/tu.MagSquared());
+            Vector tx = tv.Cross(n).ScaledBy(1.0/tv.MagSquared());
+
+            Vector dp = pi.Minus(ps);
+            double du = dp.Dot(tx), dv = dp.Dot(ty);
+
+            u += du / tx.MagSquared();
+            v += dv / ty.MagSquared();
+        }
+        tCurve += pi.Minus(pc).Dot(tc) / tc.MagSquared();
+        if(tCurve < 0.0) tCurve = 0.0;
+        if(tCurve > 1.0) tCurve = 1.0;
+    }
+    dbp("didn't converge (surface and curve intersecting)");
 }
 
