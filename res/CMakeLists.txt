@@ -32,7 +32,7 @@ if(WIN32)
         set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${source}")
     endfunction()
 elseif(APPLE)
-    set(app_resource_dir ${CMAKE_BINARY_DIR}/bin/SolveSpace.app/Contents/Resources)
+    set(app_resource_dir ${CMAKE_BINARY_DIR}/Resources)
     set(cli_resource_dir ${CMAKE_BINARY_DIR}/res)
 
     function(add_resource name)
@@ -275,6 +275,7 @@ add_resources(
     locales/en_US.po
     locales/fr_FR.po
     locales/uk_UA.po
+    locales/tr_TR.po
     locales/ru_RU.po
     locales/zh_CN.po
     fonts/unifont.hex.gz

@@ -369,8 +369,11 @@ static void PopulateMenuWithPathnames(Platform::MenuRef menu,
 
 void GraphicsWindow::PopulateRecentFiles() {
     PopulateMenuWithPathnames(openRecentMenu, SS.recentFiles, [](const Platform::Path &path) {
+        // OkayToStartNewFile could mutate recentFiles, which will invalidate path (which is a
+        // refererence into the recentFiles vector), so take a copy of it here.
+        Platform::Path pathCopy(path);
         if(!SS.OkayToStartNewFile()) return;
-        SS.Load(path);
+        SS.Load(pathCopy);
     });
 
     PopulateMenuWithPathnames(linkRecentMenu, SS.recentFiles, [](const Platform::Path &path) {
@@ -1309,6 +1312,20 @@ c:
             break;
 
         case Command::CONSTRUCTION: {
+            // if we are drawing
+            if(SS.GW.pending.operation == Pending::DRAGGING_NEW_POINT ||
+               SS.GW.pending.operation == Pending::DRAGGING_NEW_LINE_POINT ||
+               SS.GW.pending.operation == Pending::DRAGGING_NEW_ARC_POINT ||
+               SS.GW.pending.operation == Pending::DRAGGING_NEW_CUBIC_POINT ||
+               SS.GW.pending.operation == Pending::DRAGGING_NEW_RADIUS) {
+                for(auto &hr : SS.GW.pending.requests) {
+                    Request* r = SK.GetRequest(hr);
+                    r->construction = !(r->construction);
+                    SS.MarkGroupDirty(r->group);
+                }
+                SS.GW.Invalidate();
+                break;
+            }
             SS.GW.GroupSelection();
             if(SS.GW.gs.entities == 0) {
                 Error(_("No entities are selected. Select entities before "
