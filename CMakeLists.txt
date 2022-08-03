@@ -40,7 +40,7 @@ include(GetGitCommitHash)
 
 string(SUBSTRING "${GIT_COMMIT_HASH}" 0 8 solvespace_GIT_HASH)
 project(solvespace
-    VERSION 3.0
+    VERSION 3.1
     LANGUAGES C CXX ASM)
 
 set(ENABLE_GUI        ON CACHE BOOL
@@ -57,6 +57,9 @@ set(ENABLE_OPENMP     OFF CACHE BOOL
     "Whether geometric operations will be parallelized using OpenMP")
 set(ENABLE_LTO        OFF CACHE BOOL
     "Whether interprocedural (global) optimizations are enabled")
+option(FORCE_VENDORED_Eigen3
+    "Whether we should use our bundled Eigen even in the presence of a system copy"
+    OFF)
 
 set(OPENGL 3 CACHE STRING "OpenGL version to use (one of: 1 3)")
 
@@ -193,6 +196,20 @@ set(MI_BUILD_OBJECT OFF CACHE BOOL "")
 set(MI_BUILD_TESTS OFF CACHE BOOL "")
 add_subdirectory(extlib/mimalloc EXCLUDE_FROM_ALL)
 set(MIMALLOC_INCLUDE_DIR ${CMAKE_SOURCE_DIR}/extlib/mimalloc/include)
+
+if(NOT FORCE_VENDORED_Eigen3)
+    find_package(Eigen3 CONFIG)
+endif()
+if(FORCE_VENDORED_Eigen3 OR NOT EIGEN3_INCLUDE_DIRS)
+    message(STATUS "Using in-tree Eigen")
+    set(EIGEN3_FOUND             YES)
+    set(EIGEN3_INCLUDE_DIRS      ${CMAKE_SOURCE_DIR}/extlib/eigen)
+else()
+    message(STATUS "Using system Eigen: ${EIGEN3_INCLUDE_DIRS}")
+endif()
+if(NOT EXISTS "${EIGEN3_INCLUDE_DIRS}")
+    message(FATAL_ERROR "Eigen 3 not found on system or in-tree")
+endif()
 
 if(WIN32 OR APPLE OR EMSCRIPTEN)
     # On Win32 and macOS we use vendored packages, since there is little to no benefit

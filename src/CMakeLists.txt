@@ -27,7 +27,8 @@ target_include_directories(slvs_deps INTERFACE SYSTEM
     ${PNG_PNG_INCLUDE_DIR}
     ${FREETYPE_INCLUDE_DIRS}
     ${CAIRO_INCLUDE_DIRS}
-    ${MIMALLOC_INCLUDE_DIR})
+    ${MIMALLOC_INCLUDE_DIR}
+    ${EIGEN3_INCLUDE_DIRS})
 target_link_libraries(slvs_deps INTERFACE
     dxfrw
     ${ZLIB_LIBRARY}
@@ -81,13 +82,15 @@ target_compile_definitions(slvs
     PRIVATE -DLIBRARY)
 
 target_include_directories(slvs
-    PUBLIC ${CMAKE_SOURCE_DIR}/include)
+    PUBLIC
+        ${CMAKE_SOURCE_DIR}/include
+        ${EIGEN3_INCLUDE_DIRS})
 
 target_link_libraries(slvs PRIVATE slvs_deps)
 
 set_target_properties(slvs PROPERTIES
     PUBLIC_HEADER ${CMAKE_SOURCE_DIR}/include/slvs.h
-    VERSION ${solvespace_VERSION_MAJOR}.${solvespace_VERSION_MINOR}
+    VERSION ${PROJECT_VERSION}
     SOVERSION 1)
 
 if(NOT WIN32)
@@ -166,6 +169,7 @@ add_library(solvespace-core STATIC
     srf/merge.cpp
     srf/ratpoly.cpp
     srf/raycast.cpp
+    srf/shell.cpp
     srf/surface.cpp
     srf/surfinter.cpp
     srf/triangulate.cpp)
@@ -204,7 +208,7 @@ if(HAVE_GETTEXT)
                 --keyword --keyword=_ --keyword=N_ --keyword=C_:2,1c --keyword=CN_:2,1c
                 --force-po --width=100 --sort-by-file
                 --package-name=SolveSpace
-                --package-version=${solvespace_VERSION_MAJOR}.${solvespace_VERSION_MINOR}
+                --package-version=${PROJECT_VERSION}
                 "--copyright-holder=the PACKAGE authors"
                 --msgid-bugs-address=whitequark@whitequark.org
                 --from-code=utf-8 --output=${gen_output_pot} ${inputs}
@@ -351,6 +355,10 @@ if(ENABLE_GUI)
             ${GTKMM_INCLUDE_DIRS}
             ${JSONC_INCLUDE_DIRS}
             ${FONTCONFIG_INCLUDE_DIRS})
+        target_link_directories(solvespace PRIVATE
+            ${GTKMM_LIBRARY_DIRS}
+            ${JSONC_LIBRARY_DIRS}
+            ${FONTCONFIG_LIBRARY_DIRS})
         target_link_libraries(solvespace PRIVATE
             ${GTKMM_LIBRARIES}
             ${JSONC_LIBRARIES}
@@ -374,7 +382,8 @@ target_compile_definitions(solvespace-headless
     PRIVATE HEADLESS)
 
 target_include_directories(solvespace-headless
-    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+    INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}
+    PUBLIC ${EIGEN3_INCLUDE_DIRS})
 
 target_link_libraries(solvespace-headless
     PRIVATE
