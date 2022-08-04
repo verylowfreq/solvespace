@@ -45,12 +45,20 @@ static void HandleError(const char *file, int line, const char *function, const 
     FatalError(message);
 }
 
-static std::string Wrap(std::string str) {
-	return std::string(str.c_str());
+static val Wrap(const std::string& str) {
+    // FIXME(emscripten): a nicer way to do this?
+    EM_ASM($Wrap$ret = UTF8ToString($0), str.c_str());
+    return val::global("window")["$Wrap$ret"];
 }
 
 static std::string Unwrap(val emStr) {
-    return emStr.as<std::string>();
+    // FIXME(emscripten): a nicer way to do this?
+    val emArray = val::global("window").call<val>("intArrayFromString", emStr, true) ;
+    val::global("window").set("$Wrap$input", emArray);
+    char *strC = (char *)EM_ASM_INT(return allocate($Wrap$input, ALLOC_NORMAL));
+    std::string str(strC, emArray["length"].as<int>());
+    free(strC);
+    return str;
 }
 
 static void CallStdFunction(void *data) {
@@ -60,9 +68,9 @@ static void CallStdFunction(void *data) {
     }
 }
 
-static val WrapCppFunction(std::function<void()> *func) {
-   EM_ASM($Wrap$ret = dynCall_vi.bind(null, $0, $1), CallStdFunction, func);
-   return val::global("window")["$Wrap$ret"];
+static val Wrap(std::function<void()> *func) {
+    EM_ASM($Wrap$ret = Module.dynCall_vi.bind(null, $0, $1), CallStdFunction, func);
+    return val::global("window")["$Wrap$ret"];
 }
 
 //-----------------------------------------------------------------------------
@@ -246,7 +254,7 @@ public:
             menuItem->htmlMenuItem.call<void>("appendChild", htmlLabel);
         }
         menuItem->htmlMenuItem.call<void>("addEventListener", val("trigger"),
-                                          WrapCppFunction(&menuItem->onTrigger));
+                                          Wrap(&menuItem->onTrigger));
         htmlMenu.call<void>("appendChild", menuItem->htmlMenuItem);
         return menuItem;
     }
@@ -340,7 +348,7 @@ static KeyboardEvent handledKeyboardEvent;
 
 class WindowImplHtml final : public Window {
 public:
-    std::string emCanvasId;
+    std::string emCanvasSel;
     EMSCRIPTEN_WEBGL_CONTEXT_HANDLE emContext = 0;
 
     val htmlContainer;
@@ -349,8 +357,8 @@ public:
     std::function<void()> editingDoneFunc;
     std::shared_ptr<MenuBarImplHtml> menuBar;
 
-    WindowImplHtml(val htmlContainer, std::string emCanvasId) :
-        emCanvasId(emCanvasId),
+    WindowImplHtml(val htmlContainer, std::string emCanvasSel) :
+        emCanvasSel(emCanvasSel),
         htmlContainer(htmlContainer),
         htmlEditor(val::global("document").call<val>("createElement", val("input")))
     {
@@ -361,49 +369,47 @@ public:
                 onEditingDone(Unwrap(htmlEditor["value"]));
             }
         };
-        htmlEditor.call<void>("addEventListener", val("trigger"), WrapCppFunction(&editingDoneFunc));
+        htmlEditor.call<void>("addEventListener", val("trigger"), Wrap(&editingDoneFunc));
         htmlContainer.call<void>("appendChild", htmlEditor);
 
-        std::string canvasQuery = std::string("#") + emCanvasId;
-
         sscheck(emscripten_set_resize_callback(
-                    EMSCRIPTEN_EVENT_TARGET_WINDOW, this, /*useCapture=*/false,
+            EMSCRIPTEN_EVENT_TARGET_WINDOW, this, /*useCapture=*/false,
                     WindowImplHtml::ResizeCallback));
         sscheck(emscripten_set_resize_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::ResizeCallback));
         sscheck(emscripten_set_mousemove_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::MouseCallback));
         sscheck(emscripten_set_mousedown_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::MouseCallback));
         sscheck(emscripten_set_click_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::MouseCallback));
         sscheck(emscripten_set_dblclick_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::MouseCallback));
         sscheck(emscripten_set_mouseup_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::MouseCallback));
         sscheck(emscripten_set_mouseleave_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::MouseCallback));
         sscheck(emscripten_set_wheel_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::WheelCallback));
         sscheck(emscripten_set_keydown_callback(
-                    EMSCRIPTEN_EVENT_TARGET_WINDOW, this, /*useCapture=*/false,
+            EMSCRIPTEN_EVENT_TARGET_WINDOW, this, /*useCapture=*/false,
                     WindowImplHtml::KeyboardCallback));
         sscheck(emscripten_set_keyup_callback(
-                    EMSCRIPTEN_EVENT_TARGET_WINDOW, this, /*useCapture=*/false,
+            EMSCRIPTEN_EVENT_TARGET_WINDOW, this, /*useCapture=*/false,
                     WindowImplHtml::KeyboardCallback));
         sscheck(emscripten_set_webglcontextlost_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::ContextLostCallback));
         sscheck(emscripten_set_webglcontextrestored_callback(
-                    canvasQuery.c_str(), this, /*useCapture=*/false,
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::ContextRestoredCallback));
 
         ResizeCanvasElement();
@@ -576,13 +582,13 @@ public:
         emAttribs.alpha = false;
         emAttribs.failIfMajorPerformanceCaveat = true;
 
-        sscheck(emContext = emscripten_webgl_create_context((std::string("#")+emCanvasId).c_str(), &emAttribs));
-        dbp("Canvas %s: got context %d", emCanvasId.c_str(), emContext);
+        sscheck(emContext = emscripten_webgl_create_context(emCanvasSel.c_str(), &emAttribs));
+        dbp("Canvas %s: got context %d", emCanvasSel.c_str(), emContext);
     }
 
     static int ContextLostCallback(int eventType, const void *reserved, void *data) {
         WindowImplHtml *window = (WindowImplHtml *)data;
-        dbp("Canvas %s: context lost", window->emCanvasId.c_str());
+        dbp("Canvas %s: context lost", window->emCanvasSel.c_str());
         window->emContext = 0;
 
         if(window->onContextLost) {
@@ -593,32 +599,30 @@ public:
 
     static int ContextRestoredCallback(int eventType, const void *reserved, void *data) {
         WindowImplHtml *window = (WindowImplHtml *)data;
-        dbp("Canvas %s: context restored", window->emCanvasId.c_str());
+        dbp("Canvas %s: context restored", window->emCanvasSel.c_str());
         window->SetupWebGLContext();
         return EM_TRUE;
     }
 
     void ResizeCanvasElement() {
         double width, height;
-        std::string htmlContainerId = htmlContainer["id"].as<std::string>();
-        std::string containerQuery = std::string("#") + htmlContainerId;
-        sscheck(emscripten_get_element_css_size(containerQuery.c_str(), &width, &height));
+        std::string htmlContainerSel = "#" + htmlContainer["id"].as<std::string>();
+        sscheck(emscripten_get_element_css_size(htmlContainerSel.c_str(), &width, &height));
         width  *= emscripten_get_device_pixel_ratio();
         height *= emscripten_get_device_pixel_ratio();
         int curWidth, curHeight;
-        std::string canvasQuery = std::string("#") + emCanvasId;
-        sscheck(emscripten_get_canvas_element_size(canvasQuery.c_str(), &curWidth, &curHeight));
+        sscheck(emscripten_get_canvas_element_size(emCanvasSel.c_str(), &curWidth, &curHeight));
         if(curWidth != (int)width || curHeight != (int)curHeight) {
-            dbp("Canvas %s: resizing to (%g,%g)", emCanvasId.c_str(), width, height);
+            dbp("Canvas %s: resizing to (%g,%g)", emCanvasSel.c_str(), width, height);
             sscheck(emscripten_set_canvas_element_size(
-                        canvasQuery.c_str(), (int)width, (int)height));
+                        emCanvasSel.c_str(), (int)width, (int)height));
         }
     }
 
     static void RenderCallback(void *data) {
         WindowImplHtml *window = (WindowImplHtml *)data;
         if(window->emContext == 0) {
-            dbp("Canvas %s: cannot render: no context", window->emCanvasId.c_str());
+            dbp("Canvas %s: cannot render: no context", window->emCanvasSel.c_str());
             return;
         }
 
@@ -663,7 +667,7 @@ public:
             emStrategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
             emStrategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
             sscheck(emscripten_request_fullscreen_strategy(
-                        (std::string("#")+emCanvasId).c_str(), /*deferUntilInEventHandler=*/true, &emStrategy));
+                        emCanvasSel.c_str(), /*deferUntilInEventHandler=*/true, &emStrategy));
         } else {
             sscheck(emscripten_exit_fullscreen());
         }
@@ -689,7 +693,7 @@ public:
     }
 
     void GetContentSize(double *width, double *height) override {
-        sscheck(emscripten_get_element_css_size((std::string("#")+emCanvasId).c_str(), width, height));
+        sscheck(emscripten_get_element_css_size(emCanvasSel.c_str(), width, height));
     }
 
     void SetMinContentSize(double width, double height) override {
@@ -716,7 +720,7 @@ public:
     void SetTooltip(const std::string &text, double x, double y,
                     double width, double height) override {
         val htmlCanvas =
-            val::global("document").call<val>("getElementById", emCanvasId);
+            val::global("document").call<val>("querySelector", emCanvasSel);
         htmlCanvas.set("title", Wrap(text));
     }
 
@@ -771,10 +775,10 @@ WindowRef CreateWindow(Window::Kind kind, WindowRef parentWindow) {
     std::string htmlContainerId = std::string("container") + std::to_string(windowNum);
     val htmlContainer =
         val::global("document").call<val>("getElementById", htmlContainerId);
-    std::string emCanvasId = std::string("canvas") + std::to_string(windowNum);
+    std::string emCanvasSel = std::string("#canvas") + std::to_string(windowNum);
 
     windowNum++;
-    return std::make_shared<WindowImplHtml>(htmlContainer, emCanvasId);
+    return std::make_shared<WindowImplHtml>(htmlContainer, emCanvasSel);
 }
 
 //-----------------------------------------------------------------------------
@@ -854,7 +858,7 @@ public:
             dialogsOnScreen.erase(it);
         };
         responseFuncs.push_back(responseFunc);
-        htmlButton.call<void>("addEventListener", val("trigger"), WrapCppFunction(&responseFuncs.back()));
+        htmlButton.call<void>("addEventListener", val("trigger"), Wrap(&responseFuncs.back()));
 
         htmlButtons.call<void>("appendChild", htmlButton);
     }
@@ -908,7 +912,7 @@ void OpenInBrowser(const std::string &url) {
 std::vector<std::string> InitGui(int argc, char **argv) {
     static std::function<void()> onBeforeUnload = std::bind(&SolveSpaceUI::Exit, &SS);
     val::global("window").call<void>("addEventListener", val("beforeunload"),
-                                     WrapCppFunction(&onBeforeUnload));
+                                     Wrap(&onBeforeUnload));
 
     // FIXME(emscripten): get locale from user preferences
     SetLocale("en_US");

@@ -308,7 +308,7 @@ if(ENABLE_GUI)
         set(SHELL ${CMAKE_CURRENT_SOURCE_DIR}/platform/html/emshell.html)
         set(LINK_FLAGS
             --bind --shell-file ${SHELL}
-            --no-heap-copy -s ALLOW_MEMORY_GROWTH=1
+            --no-heap-copy -s ALLOW_MEMORY_GROWTH=1 -s WASM=1 -s ASYNCIFY=1
             -s TOTAL_STACK=33554432 -s TOTAL_MEMORY=134217728)
 
         get_target_property(resource_names resources NAMES)
