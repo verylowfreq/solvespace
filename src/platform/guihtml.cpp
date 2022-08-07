@@ -1077,7 +1077,9 @@ public:
     }
 
     bool RunModal() override {
-        this->filename = "untitled.slvs";
+        if (this->filename.length() < 1) {
+            this->filename = "untitled.slvs";
+        }
         return true;
     }
 };
