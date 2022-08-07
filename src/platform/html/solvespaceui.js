@@ -34,7 +34,7 @@ function stringPadLeft(s, digits, ch) {
  */
 function GetCurrentDateTimeString() {
     const now = new Date();
-    const padLeft2 = (s) => { return stringPadLeft(s, 2, '0') };
+    const padLeft2 = (num) => { return stringPadLeft(num.toString(), 2, '0') };
     return (`${now.getFullYear()}_${padLeft2(now.getMonth()+1)}_${padLeft2(now.getDate())}` +
             `_` + `${padLeft2(now.getHours())}${padLeft2(now.getMinutes())}`);
 }
@@ -633,6 +633,9 @@ class FileDownloadHelper {
 
 function saveFileDone(filename, isSaveAs, isAutosave) {
     console.log(`saveFileDone(${filename}, ${isSaveAs}, ${isAutosave})`);
+    if (isAutosave) {
+        return;
+    }
     const fileDownloadHelper = new FileDownloadHelper();
     fileDownloadHelper.AddButton("OK", 0, true);
     fileDownloadHelper.prepareFile(filename);
