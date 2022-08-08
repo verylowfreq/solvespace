@@ -78,6 +78,16 @@ function setLabelWithMnemonic(element, labelText) {
     }
 }
 
+/** Touchevent helper
+ * @param {TouchEvent} event
+ * @return {boolean} true if same element is target of touchstart and touchend
+ */
+function isSameElementOnTouchstartAndTouchend(event) {
+    const elementOnTouchStart = event.target;
+    const elementOnTouchEnd = document.elementFromPoint(event.changedTouches[0].clientX, event.changedTouches[0].clientY);
+    return elementOnTouchStart == elementOnTouchEnd;
+}
+
 /* Button helpers */
 function isButton(element) {
     return hasClass(element, 'button');
@@ -100,6 +110,15 @@ function getButton(element) {
 window.addEventListener('click', function(event) {
     var button = getButton(event.target);
     if(button) {
+        button.dispatchEvent(new Event('trigger'));
+    }
+});
+window.addEventListener("touchend", (event) => {
+    if (!isSameElementOnTouchstartAndTouchend(event)) {
+        return;
+    }
+    const button = getButton(event.target);
+    if (button) {
         button.dispatchEvent(new Event('trigger'));
     }
 });
@@ -253,6 +272,40 @@ window.addEventListener('click', function(event) {
     } else if(menu) {
         if(!hasSubmenu(menuItem)) {
             triggerMenuItem(menuItem);
+        }
+        event.stopPropagation();
+    } else {
+        document.querySelectorAll('.menu .selected, .menu .hover')
+                .forEach(function(menuItem) {
+            deselectMenuItem(menuItem);
+            event.stopPropagation();
+        });
+        document.querySelectorAll('.menu.popup')
+                .forEach(function(menu) {
+            menu.remove();
+        });
+    }
+});
+window.addEventListener("touchend", (event) => {
+    if (!isSameElementOnTouchstartAndTouchend(event)) {
+        return;
+    }
+    var menuItem = getMenuItem(event.target);
+    var menu = getMenu(menuItem);
+    if(menu && isMenubar(menu)) {
+        if(hasClass(menuItem, 'selected')) {
+            removeClass(menuItem, 'selected');
+        } else {
+            selectMenuItem(menuItem);
+        }
+        event.stopPropagation();
+        event.preventDefault();
+    } else if(menu) {
+        if(!hasSubmenu(menuItem)) {
+            triggerMenuItem(menuItem);
+        } else {
+            addClass(menuItem, "selected");
+            addClass(menuItem, "hover");
         }
         event.stopPropagation();
     } else {
