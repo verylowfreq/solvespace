@@ -578,6 +578,9 @@ public:
     std::function<void()> editingDoneFunc;
     std::shared_ptr<MenuBarImplHtml> menuBar;
 
+    bool useWorkaround_devicePixelRatio = false;
+
+
     WindowImplHtml(val htmlContainer, std::string emCanvasSel) :
         emCanvasSel(emCanvasSel),
         htmlContainer(htmlContainer),
@@ -592,6 +595,12 @@ public:
         };
         htmlEditor.call<void>("addEventListener", val("trigger"), Wrap(&editingDoneFunc));
         htmlContainer.call<void>("appendChild", htmlEditor);
+
+        //FIXME(emscripten): In Chrome for Android on tablet device, devicePixelRatio should not be multiplied.
+        std::string userAgent = val::global("navigator")["userAgent"].as<std::string>();
+        bool is_smartphone = userAgent.find("Mobile") != std::string::npos;
+        bool is_android_device = userAgent.find("Android") != std::string::npos;
+        this->useWorkaround_devicePixelRatio = is_android_device && !is_smartphone;
 
         sscheck(emscripten_set_resize_callback(
             EMSCRIPTEN_EVENT_TARGET_WINDOW, this, /*useCapture=*/false,
@@ -900,14 +909,22 @@ public:
         double width, height;
         std::string htmlContainerSel = "#" + htmlContainer["id"].as<std::string>();
         sscheck(emscripten_get_element_css_size(htmlContainerSel.c_str(), &width, &height));
-        width  *= emscripten_get_device_pixel_ratio();
-        height *= emscripten_get_device_pixel_ratio();
-        int curWidth, curHeight;
-        sscheck(emscripten_get_canvas_element_size(emCanvasSel.c_str(), &curWidth, &curHeight));
-        if(curWidth != (int)width || curHeight != (int)curHeight) {
-            dbp("Canvas %s: resizing to (%g,%g)", emCanvasSel.c_str(), width, height);
-            sscheck(emscripten_set_canvas_element_size(
-                        emCanvasSel.c_str(), (int)width, (int)height));
+        
+        if (this->useWorkaround_devicePixelRatio) {
+            // Workaround is to skip applying devicePixelRatio.
+            // So NOP here.
+        } else {
+            double devicePixelRatio = emscripten_get_device_pixel_ratio();
+            width *= devicePixelRatio;
+            height *= devicePixelRatio;
+        }
+
+        int currentWidth = 0, currentHeight = 0;
+        sscheck(emscripten_get_canvas_element_size(emCanvasSel.c_str(), &currentWidth, &currentHeight));
+        
+        if ((int)width != currentWidth || (int)height != currentHeight) {
+            // dbp("Canvas %s: resizing to (%g,%g)", emCanvasSel.c_str(), width, height);
+            sscheck(emscripten_set_canvas_element_size(emCanvasSel.c_str(), (int)width, (int)height));
         }
     }
 
@@ -974,13 +991,13 @@ public:
             std::static_pointer_cast<MenuBarImplHtml>(menuBar);
         this->menuBar = menuBarImpl;
 
-        val htmlBody = val::global("document")["body"];
-        val htmlCurrentMenuBar = htmlBody.call<val>("querySelector", val(".menubar"));
+        val htmlMain = val::global("document").call<val>("querySelector", val("main"));
+        val htmlCurrentMenuBar = htmlMain.call<val>("querySelector", val(".menubar"));
         if(htmlCurrentMenuBar.as<bool>()) {
             htmlCurrentMenuBar.call<void>("remove");
         }
-        htmlBody.call<void>("insertBefore", menuBarImpl->htmlMenuBar,
-                                 htmlBody["firstChild"]);
+        htmlMain.call<void>("insertBefore", menuBarImpl->htmlMenuBar,
+                                 htmlMain["firstChild"]);
         ResizeCanvasElement();
     }
 

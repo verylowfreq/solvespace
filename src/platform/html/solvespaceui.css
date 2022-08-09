@@ -7,6 +7,7 @@ html, body {
     background: black;
     display: flex;
     flex-direction: column;
+    height: 100%;
 }
 html, body, canvas, #splash, #container {
     margin:  0;
@@ -51,6 +52,16 @@ body {
 @keyframes rotation {
     from  { transform: rotate(0deg);   }
     to    { transform: rotate(360deg); }
+}
+
+/* Grid layout for main */
+main {
+    height: 100%;
+
+    /* Use CSS Grid layout for vertical placement. */
+    display: grid;
+    /* Row 0 for menubar (fit to content), Row 1 for canvas0, canvas1 (rest of space) */
+    grid-template-rows: auto 1fr;
 }
 
 /* Buttons */
@@ -259,19 +270,24 @@ canvas {
 
 #container {
     display: flex;
-    height: 100%;
+    overflow: hidden;
 }
 /* FIXME(emscripten): this should be dynamically adjustable, not hardcoded in CSS */
 #container0 {
     flex-basis: 80%;
     height: 100%;
     position:  relative;
+    overflow: hidden;
 }
 #container1 {
     flex-basis: 20%;
     height: 100%;
     position:  relative;
-}
-#canvas1 {
+    overflow: hidden;
     min-width: 400px;
+}
+
+#view_separator {
+    width: 4px;
+    background: hsl(0, 0%, 20%);
 }
