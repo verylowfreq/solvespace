@@ -375,8 +375,8 @@ public:
         double x = 0;
         double y = 0;
         for (int i = 0; i < emEvent.numTouches; i++) {
-            x += emEvent.touches[i].clientX;
-            y += emEvent.touches[i].clientY;
+            x += emEvent.touches[i].targetX;
+            y += emEvent.touches[i].targetY;
         }
         dst_x = x / emEvent.numTouches;
         dst_y = y / emEvent.numTouches;
@@ -386,10 +386,10 @@ public:
         if (emEvent.numTouches < 2) {
             return;
         }
-        double x1 = emEvent.touches[0].clientX;
-        double y1 = emEvent.touches[0].clientY;
-        double x2 = emEvent.touches[1].clientX;
-        double y2 = emEvent.touches[1].clientY;
+        double x1 = emEvent.touches[0].targetX;
+        double y1 = emEvent.touches[0].targetY;
+        double x2 = emEvent.touches[1].targetX;
+        double y2 = emEvent.touches[1].targetY;
         dst_distance = std::sqrt(std::pow(x1 - x2, 2) + std::pow(y1 - y2, 2));
     }
 
@@ -618,21 +618,18 @@ public:
                     emCanvasSel.c_str(), this, /*useCapture=*/false,
                     WindowImplHtml::MouseCallback));
 
-        {
-            std::string altCanvasSelector = "#canvas0";
-            sscheck(emscripten_set_touchstart_callback(
-                        altCanvasSelector.c_str(), this, /*useCapture=*/false,
-                        WindowImplHtml::TouchCallback));
-            sscheck(emscripten_set_touchmove_callback(
-                        altCanvasSelector.c_str(), this, /*useCapture=*/false,
-                        WindowImplHtml::TouchCallback));
-            sscheck(emscripten_set_touchend_callback(
-                        altCanvasSelector.c_str(), this, /*useCapture=*/false,
-                        WindowImplHtml::TouchCallback));
-            sscheck(emscripten_set_touchcancel_callback(
-                        altCanvasSelector.c_str(), this, /*useCapture=*/false,
-                        WindowImplHtml::TouchCallback));
-        }
+        sscheck(emscripten_set_touchstart_callback(
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
+                    WindowImplHtml::TouchCallback));
+        sscheck(emscripten_set_touchmove_callback(
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
+                    WindowImplHtml::TouchCallback));
+        sscheck(emscripten_set_touchend_callback(
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
+                    WindowImplHtml::TouchCallback));
+        sscheck(emscripten_set_touchcancel_callback(
+                    emCanvasSel.c_str(), this, /*useCapture=*/false,
+                    WindowImplHtml::TouchCallback));
 
         sscheck(emscripten_set_wheel_callback(
                     emCanvasSel.c_str(), this, /*useCapture=*/false,
