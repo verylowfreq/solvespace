@@ -279,12 +279,36 @@ canvas {
     position:  relative;
     overflow: hidden;
 }
-#container1 {
+
+#container1parent {
     flex-basis: 20%;
     height: 100%;
     position:  relative;
     overflow: hidden;
-    min-width: 400px;
+    min-width: 410px;
+
+    display: grid;
+    grid-template-columns: auto 19px;
+}
+
+#container1 {
+    height: 100%;
+}
+
+#canvas1scrollbarbox {
+    /* 19px is a magic number for scrollbar width (Yes, this is platform-dependent value but looks almost working.) */
+    width: 19px;
+    min-width: 19px;
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: scroll;
+}
+
+#canvas1scrollbar {
+    /* 0px will disable the scrollbar by browser. */
+    width: 1px;
+    /* Disable scrollbar as default. This value will be overwritten by program. */
+    height: 100%;
 }
 
 #view_separator {

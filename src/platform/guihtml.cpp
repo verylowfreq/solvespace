@@ -574,6 +574,7 @@ public:
 
     val htmlContainer;
     val htmlEditor;
+    val scrollbarHelper;
 
     std::function<void()> editingDoneFunc;
     std::shared_ptr<MenuBarImplHtml> menuBar;
@@ -595,6 +596,27 @@ public:
         };
         htmlEditor.call<void>("addEventListener", val("trigger"), Wrap(&editingDoneFunc));
         htmlContainer.call<void>("appendChild", htmlEditor);
+
+        std::string scrollbarElementQuery = emCanvasSel + "scrollbar";
+        dbp("scrollbar element query: \"%s\"", scrollbarElementQuery.c_str());
+        val scrollbarElement = val::global("document").call<val>("querySelector", val(scrollbarElementQuery));
+        if (scrollbarElement == val::null()) {
+            dbp("scrollbar element is null.");
+            this->scrollbarHelper = val::null();
+        } else {
+            dbp("scrollbar element OK.");
+            this->scrollbarHelper = val::global("window")["ScrollbarHelper"].new_(val(scrollbarElementQuery));
+            static std::function<void()> onScrollCallback = [this] {
+                dbp("onScrollCallback std::function this=%p", (void*)this);
+                if (this->onScrollbarAdjusted) {
+                    double newpos = this->scrollbarHelper.call<double>("getScrollbarPosition");
+                    dbp("  call onScrollbarAdjusted(%f)", newpos);
+                    this->onScrollbarAdjusted(newpos);
+                }
+                this->Invalidate();
+            };
+            this->scrollbarHelper.set("onScrollCallback", Wrap(&onScrollCallback));
+        }
 
         //FIXME(emscripten): In Chrome for Android on tablet device, devicePixelRatio should not be multiplied.
         std::string userAgent = val::global("navigator")["userAgent"].as<std::string>();
@@ -922,8 +944,9 @@ public:
         int currentWidth = 0, currentHeight = 0;
         sscheck(emscripten_get_canvas_element_size(emCanvasSel.c_str(), &currentWidth, &currentHeight));
         
+
         if ((int)width != currentWidth || (int)height != currentHeight) {
-            // dbp("Canvas %s: resizing to (%g,%g)", emCanvasSel.c_str(), width, height);
+            dbp("Canvas %s: resizing to (%g,%g)", emCanvasSel.c_str(), width, height);
             sscheck(emscripten_set_canvas_element_size(emCanvasSel.c_str(), (int)width, (int)height));
         }
     }
@@ -1054,22 +1077,54 @@ public:
     }
 
     void SetScrollbarVisible(bool visible) override {
-        // FIXME(emscripten): implement
+        dbp("SetScrollbarVisible(): visible=%d", visible ? 1 : 0);
+        if (this->scrollbarHelper == val::null()) {
+            dbp("scrollbarHelper is null.");
+            return;
+        }
+        if (!visible) {
+            this->scrollbarHelper.call<void>("setScrollbarEnabled", val(false));
+        }
     }
 
     double scrollbarPos = 0.0;
+    double scrollbarMin = 0.0;
+    double scrollbarMax = 0.0;
+    double scrollbarPageSize = 0.0;
 
     void ConfigureScrollbar(double min, double max, double pageSize) override {
+        dbp("ConfigureScrollbar(): min=%f, max=%f, pageSize=%f", min, max, pageSize);
+        if (this->scrollbarHelper == val::null()) {
+            dbp("scrollbarHelper is null.");
+            return;
+        }
         // FIXME(emscripten): implement
+        this->scrollbarMin = min;
+        this->scrollbarMax = max;
+        this->scrollbarPageSize = pageSize;
+
+        this->scrollbarHelper.call<void>("setRange", this->scrollbarMin, this->scrollbarMax);
+        this->scrollbarHelper.call<void>("setPageSize", pageSize);
     }
 
     double GetScrollbarPosition() override {
-        // FIXME(emscripten): implement
+        dbp("GetScrollbarPosition()");
+        if (this->scrollbarHelper == val::null()) {
+            dbp("scrollbarHelper is null.");
+            return 0;
+        }
+        this->scrollbarPos = this->scrollbarHelper.call<double>("getScrollbarPosition");
+        dbp("  GetScrollbarPosition() returns %f", this->scrollbarPos);
         return scrollbarPos;
     }
 
     void SetScrollbarPosition(double pos) override {
-        // FIXME(emscripten): implement
+        dbp("SetScrollbarPosition(): pos=%f", pos);
+        if (this->scrollbarHelper == val::null()) {
+            dbp("scrollbarHelper is null.");
+            return;
+        }
+        this->scrollbarHelper.call<void>("setScrollbarPosition", pos);
         scrollbarPos = pos;
     }
 
