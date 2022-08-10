@@ -81,8 +81,8 @@ main {
 
 /* Editors */
 .editor {
-    position: absolute;
-    padding: 1px 0;
+    position: fixed;
+    padding: 0;
     border: none;
 }
 
@@ -289,6 +289,7 @@ canvas {
 
     display: grid;
     grid-template-columns: auto 19px;
+    grid-template-rows: 100%;
 }
 
 #container1 {
@@ -302,6 +303,9 @@ canvas {
     height: 100%;
     overflow-x: hidden;
     overflow-y: scroll;
+
+    background-color: lightgray;
+    -webkit-overflow-scrolling: auto;
 }
 
 #canvas1scrollbar {

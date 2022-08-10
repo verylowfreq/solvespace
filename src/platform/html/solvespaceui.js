@@ -2,13 +2,7 @@ function isModal() {
     var hasModal = !!document.querySelector('.modal');
     var hasMenuBar = !!document.querySelector('.menubar .selected');
     var hasPopupMenu = !!document.querySelector('.menu.popup');
-    var hasEditor = false;
-    document.querySelectorAll('.editor').forEach(function(editor) {
-        if(editor.style.display == "") {
-            hasEditor = true;
-        }
-    });
-    return hasModal || hasMenuBar || hasPopupMenu || hasEditor;
+    return hasModal || hasMenuBar || hasPopupMenu;
 }
 
 /* String helpers */
@@ -711,7 +705,7 @@ class ScrollbarHelper {
         this.onScrollCallback = null;
         this.onScrollCallbackTicking = false;
         if (this.target) {
-            console.log("addEventListner scroll");
+            // console.log("addEventListner scroll");
             this.target.parentElement.addEventListener('scroll', () => {
                 if (this.onScrollCallbackTicking) {
                     return;
@@ -732,9 +726,14 @@ class ScrollbarHelper {
      * @param {number} ratio how long against to the viewport height (1.0 to exact same as viewport's height)
      */
     setScrollbarSize(ratio) {
-        console.log(`ScrollbarHelper.setScrollbarSize(): ratio=${ratio}`);
-        console.warn(`Scrollbarhelper.setScrollbarSize(): skipping to apply.`);
-        // this.target.style.height = `${100 * ratio}%`;
+        // if (isNaN(ratio)) {
+        //     console.warn(`setScrollbarSize(): ratio is Nan = ${ratio}`);
+        // }
+        // if (ratio < 0 || ratio > 1) {
+        //     console.warn(`setScrollbarSize(): ratio is out of range 0-1 but ${ratio}`);
+        // }
+        // console.log(`ScrollbarHelper.setScrollbarSize(): ratio=${ratio}`);
+        this.target.style.height = `${100 * ratio}%`;
     }
 
     getScrollbarPosition() {
@@ -744,7 +743,7 @@ class ScrollbarHelper {
         const ratioOnScrollbar = (scrollbarElem.scrollTop - scrollTopMin) / (scrollTopMax - scrollTopMin);
         this.currentRatio = (scrollbarElem.scrollTop - scrollTopMin) / (scrollTopMax - scrollTopMin);
         let pos = this.currentRatio * (this.rangeMax - this.pageSize - this.rangeMin) + this.rangeMin;
-        console.log(`ScrollbarHelper.getScrollbarPosition(): ratio=${ratioOnScrollbar}, pos=${pos}, scrollTop=${scrollbarElem.scrollTop}, scrollTopMin=${scrollTopMin}, scrollTopMax=${scrollTopMax}, rangeMin=${this.rangeMin}, rangeMax=${this.rangeMax}, pageSize=${this.pageSize}`);
+        // console.log(`ScrollbarHelper.getScrollbarPosition(): ratio=${ratioOnScrollbar}, pos=${pos}, scrollTop=${scrollbarElem.scrollTop}, scrollTopMin=${scrollTopMin}, scrollTopMax=${scrollTopMax}, rangeMin=${this.rangeMin}, rangeMax=${this.rangeMax}, pageSize=${this.pageSize}`);
         if (isNaN(pos)) {
             return 0;
         } else {
@@ -767,7 +766,7 @@ class ScrollbarHelper {
         const newScrollTop = currentPositionRatio * scrollWidth;
         scrollbarElement.scrollTop = currentPositionRatio * scrollWidth;
 
-        console.log(`ScrollbarHelper.setScrollbarPosition(): pos=${position}, currentPositionRatio=${currentPositionRatio}, calculated scrollTop=${newScrollTop}`);
+        // console.log(`ScrollbarHelper.setScrollbarPosition(): pos=${position}, currentPositionRatio=${currentPositionRatio}, calculated scrollTop=${newScrollTop}`);
 
         if (false) {
         // const ratio = (position - this.rangeMin) * ((this.rangeMax - this.pageSize) - this.rangeMin);
@@ -794,12 +793,12 @@ class ScrollbarHelper {
 
     setPageSize(pageSize) {
         if (this.rangeMin == this.rangeMax) {
-            console.log(`ScrollbarHelper::setPageSize(): size=${size}, but rangeMin == rangeMax`);
+            // console.log(`ScrollbarHelper::setPageSize(): size=${size}, but rangeMin == rangeMax`);
             return;
         }
         this.pageSize = pageSize;
         const ratio = (this.rangeMax - this.rangeMin) / this.pageSize;
-        console.log(`ScrollbarHelper::setPageSize(): pageSize=${pageSize}, ratio=${ratio}`);
+        // console.log(`ScrollbarHelper::setPageSize(): pageSize=${pageSize}, ratio=${ratio}`);
         this.setScrollbarSize(ratio);
     }
 
