@@ -195,17 +195,21 @@ class FileManagerUI {
         dialog.appendChild(buttoncontainer);
 
         this.__addButton('OK', 0, false, () => {
-            let selectedFilename = null;
-            const fileitems = document.querySelectorAll('input[type="radio"][name="filemanager_filelist"]');
-            Array.from(fileitems).forEach((radiobox) => {
-                if (radiobox.checked) {
-                    selectedFilename = radiobox.parentElement.getAttribute('data-filename');
+            if (this.__isOpenDialog) {
+                let selectedFilename = null;
+                const fileitems = document.querySelectorAll('input[type="radio"][name="filemanager_filelist"]');
+                Array.from(fileitems).forEach((radiobox) => {
+                    if (radiobox.checked) {
+                        selectedFilename = radiobox.parentElement.getAttribute('data-filename');
+                    }
+                });
+                if (selectedFilename) {
+                    return true;
+                } else {
+                    return false;
                 }
-            });
-            if (selectedFilename) {
-                return true;
             } else {
-                return false;
+                return true;
             }
         });
 

@@ -1513,8 +1513,8 @@ public:
         //       But we only treat filename.
         dbp("FileDialogImplHtml::GetFilename(): path=\"%s\"", path.raw.c_str());
         this->filename = basePathInFilesystem + path.FileName();
-        Path filename_ = Path::From(this->filename);
-        this->jsFileManagerUI.call<void>("setDefaultFilename", val(filename_.raw));
+        std::string filename_ = Path::From(this->filename).FileName();
+        this->jsFileManagerUI.call<void>("setDefaultFilename", val(filename_));
     }
     
     void SuggestFilename(Platform::Path path) override {
