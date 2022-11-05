@@ -1,4 +1,5 @@
 set(CMAKE_SYSTEM_NAME Windows)
+set(CMAKE_SYSTEM_PROCESSOR i686)
 
 set(TRIPLE i686-w64-mingw32)
 
