@@ -356,6 +356,7 @@ if(ENABLE_GUI)
             platform/guiwin.cpp)
 
         target_link_libraries(solvespace PRIVATE comctl32)
+        target_link_libraries(solvespace PRIVATE shlwapi)
     elseif(APPLE)
         target_compile_options(solvespace PRIVATE -fobjc-arc)
         target_compile_definitions(solvespace PRIVATE GL_SILENCE_DEPRECATION)
